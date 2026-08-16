@@ -29,9 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_carousel'])) {
     // Also update bloc_accueil etat
     executeRequete("UPDATE bloc_accueil SET etat='$carousel_actif' WHERE type_section='99'");
 
-    sessionStorage_toast('Paramètres du carousel mis à jour avec succès.', 'success');
-    header('Location: index.php?r=carousel_config');
-    exit;
+    phpToastRedirect('Paramètres du carousel mis à jour avec succès.', 'index.php?r=carousel_config', 'success');
 }
 
 // Récupération des paramètres actuels
