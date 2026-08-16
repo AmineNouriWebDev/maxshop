@@ -393,105 +393,14 @@
 
 
 
-  <?php if(basename($_SERVER['PHP_SELF']) == 'index.php' || basename($_SERVER['PHP_SELF']) == ''): ?>
 
-  <!-- ── BANDEAU DE CONFIANCE (Trust) ── -->
-  <div class="hp-trust">
-    <div class="hp-container">
-      <div class="hp-trust-grid">
-        <?php
-        $req_trust_p = executeRequete("SELECT b.id FROM bloc_accueil b JOIN liste_sections s ON b.type_section = s.id WHERE s.titre = 'Icônes Confiance (Trust)' AND b.etat = 1 ORDER BY b.ordre LIMIT 1");
-        $has_trust_items = false;
-        
-        if($req_trust_p && $row_parent = mysqli_fetch_assoc($req_trust_p)) {
-            $req_items = executeRequete("SELECT titre, contenu, icone FROM liste_section_content WHERE idbloc = " . $row_parent['id'] . " ORDER BY ordre ASC, id ASC");
-            if ($req_items && mysqli_num_rows($req_items) > 0) {
-                $has_trust_items = true;
-                while($row_trust = mysqli_fetch_assoc($req_items)):
-                    $icon_svg = '';
-                    $icon_val = trim($row_trust['icone'] ?? '');
-                    
-                    // Si la valeur ressemble à une classe FontAwesome (ex: fa-solid fa-truck, fas fa-star)
-                    if (strpos($icon_val, 'fa-') !== false || strpos($icon_val, 'fas ') !== false || strpos($icon_val, 'fab ') !== false || strpos($icon_val, 'far ') !== false || strpos($icon_val, 'fa ') !== false) {
-                        $icon_svg = '<i class="' . htmlspecialchars($icon_val) . '" style="font-size:24px;"></i>';
-                    } else {
-                        switch($icon_val) {
-                            case 'truck': $icon_svg = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h6l2 5v3h-8V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>'; break;
-                            case 'shield': $icon_svg = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'; break;
-                            case 'refresh': $icon_svg = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>'; break;
-                            case 'credit-card': $icon_svg = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>'; break;
-                            case 'phone': $icon_svg = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>'; break;
-                            default: $icon_svg = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'; break;
-                        }
-                    }
-        ?>
-          <div class="hp-trust-item">
-            <div class="hp-trust-icon">
-              <?php echo $icon_svg; ?>
-            </div>
-            <div>
-              <div class="hp-trust-label"><?php echo htmlspecialchars($row_trust['titre']); ?></div>
-              <div class="hp-trust-sub"><?php echo strip_tags($row_trust['contenu']); ?></div>
-            </div>
-          </div>
-        <?php 
-                endwhile;
-            }
-        } 
-        
-        if(!$has_trust_items) { 
-        ?>
-        <div class="hp-trust-item">
-          <div class="hp-trust-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h6l2 5v3h-8V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-          </div>
-          <div>
-            <div class="hp-trust-label">Livraison rapide</div>
-            <div class="hp-trust-sub">Offerte dès 100 DT</div>
-          </div>
-        </div>
-        <div class="hp-trust-item">
-          <div class="hp-trust-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          </div>
-          <div>
-            <div class="hp-trust-label">Garantie officielle</div>
-            <div class="hp-trust-sub">12 mois constructeur</div>
-          </div>
-        </div>
-        <div class="hp-trust-item">
-          <div class="hp-trust-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
-          </div>
-          <div>
-            <div class="hp-trust-label">Retour facile</div>
-            <div class="hp-trust-sub">30 jours sans frais</div>
-          </div>
-        </div>
-        <div class="hp-trust-item">
-          <div class="hp-trust-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          </div>
-          <div>
-            <div class="hp-trust-label">Paiement sécurisé</div>
-            <div class="hp-trust-sub">SSL 256-bit</div>
-          </div>
-        </div>
-        <?php } ?>
-      </div>
-    </div>
-  </div>
-
-  <?php endif; ?>
-
-  <!-- CATEGORIES RAPIDES - MIGRÉ VERS BLOC_ACCUEIL (ID 10) -->
 
 
   <!-- ════════════════════════════════════════════════
        PRODUCT BLOCS (depuis bloc_accueil DB)
        ════════════════════════════════════════════════ -->
   <?php
-  $req_blocs = "SELECT * FROM `bloc_accueil` WHERE `etat` = '1' AND `affichage_accueil`='1' ORDER BY `ordre`";
+  $req_blocs = "SELECT * FROM `bloc_accueil` WHERE `etat` = '1' AND (`affichage_accueil`='1' OR `type_section` IN ('99','8','9')) ORDER BY `ordre`";
   $res_blocs = executeRequete($req_blocs);
   $bloc_idx  = 0;
 
@@ -514,6 +423,44 @@
 
   <?php if ($type_bloc == '99'): // ── Carousel Principal ── ?>
       <?php include('includes/hero-carousel-tw.php'); ?>
+
+  <?php elseif ($type_bloc == '9'): // ── Trust (Icônes confiance) ── ?>
+      <?php if(basename($_SERVER['PHP_SELF']) == 'index.php' || basename($_SERVER['PHP_SELF']) == ''): ?>
+      <div class="hp-trust">
+        <div class="hp-container">
+          <div class="hp-trust-grid">
+            <?php
+            $trust_items_q = executeRequete("SELECT titre, contenu, icone FROM liste_section_content WHERE idbloc = $bloc_id ORDER BY ordre ASC, id ASC");
+            $has_trust = false;
+            if ($trust_items_q && mysqli_num_rows($trust_items_q) > 0):
+                $has_trust = true;
+                while($rt = mysqli_fetch_assoc($trust_items_q)):
+                    $icon_val = trim($rt['icone'] ?? '');
+                    if (strpos($icon_val, 'fa') !== false) {
+                        $icon_svg = '<i class="' . htmlspecialchars($icon_val) . '" style="font-size:24px;"></i>';
+                    } else {
+                        $icons_map = [
+                            'truck' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h6l2 5v3h-8V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+                            'shield' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+                            'refresh' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>',
+                            'credit-card' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
+                            'phone' => '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+                        ];
+                        $icon_svg = $icons_map[$icon_val] ?? '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>';
+                    }
+            ?>
+                <div class="hp-trust-item">
+                  <div class="hp-trust-icon"><?php echo $icon_svg; ?></div>
+                  <div>
+                    <div class="hp-trust-label"><?php echo htmlspecialchars($rt['titre']); ?></div>
+                    <div class="hp-trust-sub"><?php echo strip_tags($rt['contenu']); ?></div>
+                  </div>
+                </div>
+            <?php endwhile; endif; ?>
+          </div>
+        </div>
+      </div>
+      <?php endif; ?>
 
   <?php elseif ($type_bloc == '8'): // ── Ticker ──
       $tickers = [];
