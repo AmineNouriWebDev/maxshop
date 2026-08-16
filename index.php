@@ -61,9 +61,6 @@ if (lienAccueil()) {
     <!-- ═══ HEADER TAILWIND (top bar + nav + mobile drawer) ═══ -->
     <?php include('includes/header-tw.php'); ?>
 
-    <!-- ═══ HERO CAROUSEL FUTURISTE ═══ -->
-    <?php include('includes/hero-carousel-tw.php'); ?>
-
     <!-- ═══ CONTENU HOMEPAGE TAILWIND ═══ -->
     <?php include('includes/contenu-home-tw.php'); ?>
 

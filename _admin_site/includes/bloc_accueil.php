@@ -59,36 +59,52 @@
 		                                  if ($num > 0 ) { 
 			                               while ($data = mysqli_fetch_array($resultat))  {
 								         ?>
-                                             <tr data-id="<?php echo afficheChamp($data['id']); ?>" style="cursor: grab;">
+                                              <tr data-id="<?php echo afficheChamp($data['id']); ?>" style="cursor: grab;">
                                                  <td><i class="fa fa-arrows-v text-muted m-r-10 drag-handle" style="cursor: grab;" aria-hidden="true"></i> <?php echo afficheChamp($data['titre']); ?></td>
                                                  <td><?php echo titreListeSection($data['type_section']); ?></td>
                                                  <td><?php echo auteur_name($data['auteur']); ?></td>
                                                  <td class="text-nowrap">
-                                                     <?php if($data['type_section'] == '8'){ ?>
-                                                         <a href="index.php?r=addSectionContent&id=<?php echo afficheChamp($data['id']); ?>" data-toggle="tooltip" data-original-title="Modifier" style="margin-right: 8px;"> <i class="fa fa-pencil text-inverse"></i> </a>
-                                                     <?php } else { ?>
-                                                         <a href="index.php?r=mbloc_accueil&id=<?php echo afficheChamp($data['id']); ?>" data-toggle="tooltip" data-original-title="Modifier" style="margin-right: 8px;"> <i class="fa fa-pencil text-inverse"></i> </a>
-                                                     <?php } ?>
-                                                     
-                                                     <?php if($data['type_section'] == '7' || $data['type_section'] == '8'){ ?>
-                                                         <!-- No delete for topbar or ticker, just show status toggle -->
-                                                         <?php if($data['etat'] == '1'){ ?>
+                                                     <?php if($data['type_section'] == '99'): ?>
+                                                         <!-- Carousel principal -->
+                                                         <a href="index.php?r=carousel_config" data-toggle="tooltip" data-original-title="Configurer" style="margin-right: 8px;">
+                                                             <i class="fa fa-cog text-inverse"></i>
+                                                         </a>
+                                                         <?php if($data['etat'] == '1'): ?>
                                                              <a href="index.php?r=bloc_accueil&id=<?php echo afficheChamp($data['id']); ?>&action=toggle" data-toggle="tooltip" data-original-title="Désactiver" style="color: #2ec4b6; font-weight: 600; font-size: 0.8125rem; border: 1px solid #2ec4b6; padding: 2px 6px; border-radius: 4px; text-decoration: none;">
                                                                  Actif
                                                              </a>
-                                                         <?php } else { ?>
+                                                         <?php else: ?>
                                                              <a href="index.php?r=bloc_accueil&id=<?php echo afficheChamp($data['id']); ?>&action=toggle" data-toggle="tooltip" data-original-title="Activer" style="color: #ef5350; font-weight: 600; font-size: 0.8125rem; border: 1px solid #ef5350; padding: 2px 6px; border-radius: 4px; text-decoration: none;">
                                                                  Inactif
                                                              </a>
-                                                         <?php } ?>
-                                                     <?php } else { ?>
-                                                         <?php if(typeSectionBloc($data['id']) == '4'){ ?>
+                                                         <?php endif; ?>
+                                                     <?php elseif($data['type_section'] == '8'): ?>
+                                                         <a href="index.php?r=addSectionContent&id=<?php echo afficheChamp($data['id']); ?>" data-toggle="tooltip" data-original-title="Modifier" style="margin-right: 8px;"> <i class="fa fa-pencil text-inverse"></i> </a>
+                                                     <?php elseif($data['type_section'] == '7'): ?>
+                                                         <a href="index.php?r=mbloc_accueil&id=<?php echo afficheChamp($data['id']); ?>" data-toggle="tooltip" data-original-title="Modifier" style="margin-right: 8px;"> <i class="fa fa-pencil text-inverse"></i> </a>
+                                                     <?php else: ?>
+                                                         <a href="index.php?r=mbloc_accueil&id=<?php echo afficheChamp($data['id']); ?>" data-toggle="tooltip" data-original-title="Modifier" style="margin-right: 8px;"> <i class="fa fa-pencil text-inverse"></i> </a>
+                                                     <?php endif; ?>
+                                                     
+                                                     <?php if($data['type_section'] == '7' || $data['type_section'] == '8'): ?>
+                                                         <!-- No delete for topbar or ticker, just show status toggle -->
+                                                         <?php if($data['etat'] == '1'): ?>
+                                                             <a href="index.php?r=bloc_accueil&id=<?php echo afficheChamp($data['id']); ?>&action=toggle" data-toggle="tooltip" data-original-title="Désactiver" style="color: #2ec4b6; font-weight: 600; font-size: 0.8125rem; border: 1px solid #2ec4b6; padding: 2px 6px; border-radius: 4px; text-decoration: none;">
+                                                                 Actif
+                                                             </a>
+                                                         <?php else: ?>
+                                                             <a href="index.php?r=bloc_accueil&id=<?php echo afficheChamp($data['id']); ?>&action=toggle" data-toggle="tooltip" data-original-title="Activer" style="color: #ef5350; font-weight: 600; font-size: 0.8125rem; border: 1px solid #ef5350; padding: 2px 6px; border-radius: 4px; text-decoration: none;">
+                                                                 Inactif
+                                                             </a>
+                                                         <?php endif; ?>
+                                                     <?php elseif($data['type_section'] != '99'): ?>
+                                                         <?php if(typeSectionBloc($data['id']) == '4'): ?>
                                                              <a href="index.php?r=addproduits&id=<?php echo afficheChamp($data['id']); ?>" data-toggle="tooltip" data-original-title="Ajouter produits" style="margin-right: 8px;"> <i class="fa fa-list text-inverse"></i> </a>
-                                                         <?php } else { ?>
+                                                         <?php else: ?>
                                                              <a href="index.php?r=addSectionContent&id=<?php echo afficheChamp($data['id']); ?>" data-toggle="tooltip" data-original-title="Ajouter section content" style="margin-right: 8px;"> <i class="fa fa-list text-inverse"></i> </a>
-                                                         <?php } ?>
+                                                         <?php endif; ?>
                                                          <a href="javascript:void(0);" data-toggle="tooltip" data-original-title="Supprimer" onclick="confirmGlobalDelete('index.php?r=bloc_accueil&id=<?php echo afficheChamp($data['id']); ?>&action=supp')"> <i class="fa fa-close text-danger"></i></a>
-                                                     <?php } ?>
+                                                     <?php endif; ?>
                                                  </td>
                                              </tr>
                                          <?php } ?>

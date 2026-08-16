@@ -428,6 +428,14 @@ if (file_exists("../generate_sitemap.php")) {
 
 			 break;
 			 
+			 case "carousel_config" : 
+
+			 include("includes/fonctions/fction_sliders.php"); 
+
+			 include("includes/carousel_config.php");
+
+			 break;
+			 
 			 case "fichesTechniques" :
 
 			 include("includes/fonctions/fction_produits.php");  

@@ -207,6 +207,7 @@ function supprimerListeSection($id){
 
 function titreListeSection($id)
 {
+    if ($id == '99') return '<span style="color:var(--color-primary);font-weight:600;">🖼 Carousel Principal</span>';
 	$requete = "SELECT * FROM `liste_sections` WHERE `id` = '".$id."'";
 	$resultat = executeRequete($requete);
 	$data = mysqli_fetch_array($resultat);

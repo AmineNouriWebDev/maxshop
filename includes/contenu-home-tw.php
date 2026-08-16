@@ -391,61 +391,7 @@
 
 <div class="hp-body">
 
-  <!-- ════════════════════════════════════════════════
-       TICKER ANNOUNCEMENT BAR
-       ════════════════════════════════════════════════ -->
-  <?php
-  $req_ticker_p = executeRequete("SELECT b.id FROM bloc_accueil b JOIN liste_sections s ON b.type_section = s.id WHERE s.titre = 'Texte Ticker' AND b.etat = '1' ORDER BY b.ordre LIMIT 1");
-  if ($req_ticker_p && $row_parent = mysqli_fetch_assoc($req_ticker_p)):
-      $tickers = [];
-      $req_items = executeRequete("SELECT titre, icone, lien FROM liste_section_content WHERE idbloc = " . $row_parent['id'] . " ORDER BY ordre ASC, id ASC");
-      while($row_item = mysqli_fetch_assoc($req_items)) {
-          $str = '';
-          if(!empty($row_item['icone'])) {
-              $str .= '<i class="' . htmlspecialchars($row_item['icone']) . '" style="margin-right: 6px;"></i> ';
-          }
-          $str .= htmlspecialchars($row_item['titre']);
-          $tickers[] = [
-              'html' => $str,
-              'link' => !empty($row_item['lien']) ? $row_item['lien'] : ''
-          ];
-      }
-      if(empty($tickers)) {
-          $default_titles = [
-              "🔥 Offres Flash du Jour",
-              "📦 Livraison offerte dès 100 DT",
-              "🛡️ Garantie constructeur 12 mois",
-              "💳 Paiement sécurisé",
-              "🔄 Retour sous 30 jours",
-              "📞 Support " . ($gsm ?? '')
-          ];
-          foreach($default_titles as $dt) {
-              $tickers[] = ['html' => $dt, 'link' => ''];
-          }
-      }
-  ?>
-  <div class="hp-ticker" aria-hidden="true">
-    <div class="hp-ticker-inner">
-      <?php
-      // Repeat content twice for seamless loop
-      for ($t = 0; $t < 2; $t++): 
-        foreach($tickers as $ticker):
-      ?>
-        <span class="hp-ticker-item">
-            <?php if(!empty($ticker['link'])): ?>
-                <a href="<?php echo htmlspecialchars(fixLien($ticker['link'])); ?>" target="_blank" rel="noopener noreferrer"><?php echo $ticker['html']; ?></a>
-            <?php else: ?>
-                <?php echo $ticker['html']; ?>
-            <?php endif; ?>
-        </span>
-        <span class="hp-ticker-item hp-ticker-sep">·</span>
-      <?php 
-        endforeach;
-      endfor; 
-      ?>
-    </div>
-  </div>
-  <?php endif; ?>
+
 
   <?php if(basename($_SERVER['PHP_SELF']) == 'index.php' || basename($_SERVER['PHP_SELF']) == ''): ?>
 
@@ -566,7 +512,60 @@
     $bloc_idx++;
   ?>
 
-  <?php if ($type_bloc == '4'): // ── Produits (promo ou normal) ──
+  <?php if ($type_bloc == '99'): // ── Carousel Principal ── ?>
+      <?php include('includes/hero-carousel-tw.php'); ?>
+
+  <?php elseif ($type_bloc == '8'): // ── Ticker ──
+      $tickers = [];
+      $req_items = executeRequete("SELECT titre, icone, lien FROM liste_section_content WHERE idbloc = " . $bloc_id . " ORDER BY ordre ASC, id ASC");
+      while($row_item = mysqli_fetch_assoc($req_items)) {
+          $str = '';
+          if(!empty($row_item['icone'])) {
+              $str .= '<i class="' . htmlspecialchars($row_item['icone']) . '" style="margin-right: 6px;"></i> ';
+          }
+          $str .= htmlspecialchars($row_item['titre']);
+          $tickers[] = [
+              'html' => $str,
+              'link' => !empty($row_item['lien']) ? $row_item['lien'] : ''
+          ];
+      }
+      if(empty($tickers)) {
+          $default_titles = [
+              "🔥 Offres Flash du Jour",
+              "📦 Livraison offerte dès 100 DT",
+              "🛡️ Garantie constructeur 12 mois",
+              "💳 Paiement sécurisé",
+              "🔄 Retour sous 30 jours",
+              "📞 Support " . ($gsm ?? '')
+          ];
+          foreach($default_titles as $dt) {
+              $tickers[] = ['html' => $dt, 'link' => ''];
+          }
+      }
+  ?>
+  <div class="hp-ticker" aria-hidden="true">
+    <div class="hp-ticker-inner">
+      <?php
+      // Repeat content twice for seamless loop
+      for ($t = 0; $t < 2; $t++): 
+        foreach($tickers as $ticker):
+      ?>
+        <span class="hp-ticker-item">
+            <?php if(!empty($ticker['link'])): ?>
+                <a href="<?php echo htmlspecialchars(fixLien($ticker['link'])); ?>" target="_blank" rel="noopener noreferrer"><?php echo $ticker['html']; ?></a>
+            <?php else: ?>
+                <?php echo $ticker['html']; ?>
+            <?php endif; ?>
+        </span>
+        <span class="hp-ticker-item hp-ticker-sep">·</span>
+      <?php 
+        endforeach;
+      endfor; 
+      ?>
+    </div>
+  </div>
+
+  <?php elseif ($type_bloc == '4'): // ── Produits (promo ou normal) ──
     // Detect promo
     $en_promo = "SELECT en_promo FROM `liste_produits` WHERE idbloc='$bloc_id' LIMIT 1";
     $r_p = executeRequete($en_promo);

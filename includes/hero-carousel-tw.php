@@ -10,6 +10,17 @@
  * ============================================================
  */
 
+// Fetch configuration
+$req_conf = executeRequete("SELECT carousel_autoplay, carousel_interval, carousel_hauteur, carousel_afficher_fleches, carousel_afficher_points, carousel_afficher_compteur, carousel_afficher_progressbar FROM site_configuration WHERE id=1");
+$conf = mysqli_fetch_assoc($req_conf);
+$c_autoplay = $conf['carousel_autoplay'] ?? 1;
+$c_interval = $conf['carousel_interval'] ?? 4000;
+$c_hauteur = $conf['carousel_hauteur'] ?? 'clamp(320px, 52vw, 640px)';
+$c_fleches = $conf['carousel_afficher_fleches'] ?? 1;
+$c_points = $conf['carousel_afficher_points'] ?? 1;
+$c_compteur = $conf['carousel_afficher_compteur'] ?? 1;
+$c_progress = $conf['carousel_afficher_progressbar'] ?? 1;
+
 // Fetch sliders from DB
 $slider_items = [];
 $req_sliders  = "SELECT * FROM `sliders` WHERE `etat` = '1' ORDER BY `ordre`";
@@ -49,7 +60,7 @@ $slider_count = count($slider_items);
   }
   .sh-hero-slide img {
     width: 100%;
-    height: clamp(320px, 52vw, 640px);
+    height: <?php echo htmlspecialchars($c_hauteur); ?>;
     object-fit: cover;
     object-position: center;
     display: block;
@@ -255,11 +266,13 @@ $slider_count = count($slider_items);
   <div class="sh-hero-corner sh-hero-corner-br"></div>
 
   <!-- Slide counter -->
+  <?php if ($c_compteur): ?>
   <div class="sh-slide-counter" aria-live="polite">
     <span class="current" id="sh-cur">1</span>
     <span>/</span>
     <span><?php echo $slider_count; ?></span>
   </div>
+  <?php endif; ?>
 
   <!-- Slides -->
   <div class="sh-hero-track" id="sh-track">
@@ -304,7 +317,7 @@ $slider_count = count($slider_items);
   </div>
 
   <!-- Prev / Next -->
-  <?php if ($slider_count > 1): ?>
+  <?php if ($slider_count > 1 && $c_fleches): ?>
     <button class="sh-hero-btn sh-hero-btn-prev" id="sh-prev" aria-label="Slide précédent">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
@@ -314,7 +327,7 @@ $slider_count = count($slider_items);
   <?php endif; ?>
 
   <!-- Dots -->
-  <?php if ($slider_count > 1): ?>
+  <?php if ($slider_count > 1 && $c_points): ?>
     <div class="sh-hero-dots" role="tablist" aria-label="Navigation des slides">
       <?php for ($d = 0; $d < $slider_count; $d++): ?>
         <button
@@ -329,7 +342,9 @@ $slider_count = count($slider_items);
   <?php endif; ?>
 
   <!-- Progress bar -->
+  <?php if ($c_progress): ?>
   <div class="sh-hero-progress" id="sh-progress"></div>
+  <?php endif; ?>
 
 </div>
 
@@ -337,7 +352,8 @@ $slider_count = count($slider_items);
 <script>
 (function() {
   var TOTAL    = <?php echo $slider_count; ?>;
-  var DELAY    = 4000;
+  var DELAY    = <?php echo intval($c_interval); ?>;
+  var AUTOPLAY = <?php echo $c_autoplay ? 'true' : 'false'; ?>;
   var current  = 0;
   var timer    = null;
   var isRunning= true;
@@ -384,7 +400,7 @@ $slider_count = count($slider_items);
   function prev() { goTo(current - 1); }
 
   function startAuto() {
-    if (TOTAL <= 1) return;
+    if (TOTAL <= 1 || !AUTOPLAY) return;
     clearInterval(timer);
     timer = setInterval(next, DELAY);
     isRunning = true;
