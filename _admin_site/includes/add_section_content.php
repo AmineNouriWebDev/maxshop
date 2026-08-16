@@ -303,7 +303,7 @@ $is_trust = ($type_sec == '9');
                             Affiché sur la bannière en page d'accueil.
                         </small>
                     </div>
-                    <?php if(!$is_ticker && !$is_trust) { ?>
+                    <?php if(!$is_ticker) { ?>
                     <div class="form-group">
                         <label class="form-label">Contenu / Sous-titre <small style="color:var(--color-text-muted)">(Pour Trust)</small></label>
                         <textarea name="contenu" class="admin-input" rows="2" placeholder="Description courte..."></textarea>

@@ -258,7 +258,7 @@ $is_trust = ($type_sec == '9');
                                     </small>
                                 </div>
                             </div>
-                            <?php if(!$is_ticker && !$is_trust) { ?>
+                            <?php if(!$is_ticker) { ?>
                             <div class="form-group">
                                 <label class="form-label">Contenu / Sous-titre <small style="color:var(--color-text-muted)">(Pour Trust)</small></label>
                                 <div class="controls">
