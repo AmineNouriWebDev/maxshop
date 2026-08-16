@@ -145,9 +145,10 @@ if (isset($_POST['action']) && $_POST['action'] == 'mod' ){
 $type_sec = typeSectionBloc($_GET['idb']);
 $is_ticker = ($type_sec == '8');
 $is_trust = ($type_sec == '9');
+$is_catrapide = ($type_sec == '10');
 ?>
 
-                    <?php if(!$is_ticker && !$is_trust) { ?>
+                    <?php if(!$is_ticker && !$is_trust && !$is_catrapide) { ?>
                     <!-- IMAGE SECTION -->
                     <div style="background:color-mix(in srgb, var(--color-primary) 4%, transparent); border:1px dashed color-mix(in srgb, var(--color-primary) 35%, transparent); border-radius:0.75rem; padding:1.25rem; margin-bottom:1.5rem;">
                         <label style="font-weight:700; font-size:0.875rem; color:var(--color-primary); display:block; margin-bottom:1rem;">
@@ -258,7 +259,7 @@ $is_trust = ($type_sec == '9');
                                     </small>
                                 </div>
                             </div>
-                            <?php if(!$is_ticker) { ?>
+                            <?php if(!$is_ticker && !$is_catrapide) { ?>
                             <div class="form-group">
                                 <label class="form-label">Contenu / Sous-titre <small style="color:var(--color-text-muted)">(Pour Trust)</small></label>
                                 <div class="controls">
@@ -277,7 +278,7 @@ $is_trust = ($type_sec == '9');
                                     </small>
                                 </div>
                             </div>
-                            <?php if(!$is_ticker && !$is_trust) { ?>
+                            <?php if(!$is_ticker && !$is_trust && !$is_catrapide) { ?>
                             <div class="form-group">
                                 <label class="form-label">Texte du bouton (Optionnel)</label>
                                 <div class="controls">

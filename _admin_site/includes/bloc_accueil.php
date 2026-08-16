@@ -75,8 +75,8 @@
                                                              <a href="index.php?r=bloc_accueil&id=<?php echo afficheChamp($data['id']); ?>&action=toggle" style="color:#ef5350;font-weight:600;font-size:.8125rem;border:1px solid #ef5350;padding:2px 6px;border-radius:4px;text-decoration:none;">Inactif</a>
                                                          <?php endif; ?>
 
-                                                     <?php elseif($data['type_section'] == '9'): ?>
-                                                         <!-- Trust/Réassurance : engrenage + toggle -->
+                                                     <?php elseif($data['type_section'] == '9' || $data['type_section'] == '10'): ?>
+                                                         <!-- Trust/Réassurance & Catégories Rapides : engrenage + toggle -->
                                                          <a href="index.php?r=addSectionContent&id=<?php echo afficheChamp($data['id']); ?>" data-toggle="tooltip" data-original-title="Configurer les éléments" style="margin-right: 8px;">
                                                              <i class="fa fa-cog text-inverse"></i>
                                                          </a>

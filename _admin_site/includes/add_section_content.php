@@ -124,6 +124,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'ajt' ){
 $type_sec = typeSectionBloc($_GET['id']);
 $is_ticker = ($type_sec == '8');
 $is_trust = ($type_sec == '9');
+$is_catrapide = ($type_sec == '10');
 ?>
 
 <!-- ── Current Content List ── -->
@@ -234,7 +235,7 @@ $is_trust = ($type_sec == '9');
             Ajouter un nouvel élément
         </div>
 
-        <?php if(!$is_ticker && !$is_trust) { ?>
+        <?php if(!$is_ticker && !$is_trust && !$is_catrapide) { ?>
         <!-- Tip for Virtual Categories -->
         <div style="background:color-mix(in srgb, var(--color-primary) 5%, transparent); border-left:4px solid var(--color-primary); padding:1rem; border-radius:0.5rem; margin-bottom:1.5rem; font-size:0.875rem;">
             <div style="font-weight:700; color:var(--color-primary); margin-bottom:0.25rem; display:flex; align-items:center; gap:8px;">
@@ -247,7 +248,7 @@ $is_trust = ($type_sec == '9');
         <?php } ?>
 
         <form method="POST" enctype="multipart/form-data" novalidate="novalidate">
-            <?php if(!$is_ticker && !$is_trust) { ?>
+            <?php if(!$is_ticker && !$is_trust && !$is_catrapide) { ?>
             <!-- IMAGE BLOCK -->
             <div style="background:color-mix(in srgb, var(--color-primary) 4%, transparent); border:1px dashed color-mix(in srgb, var(--color-primary) 35%, transparent); border-radius:0.75rem; padding:1.25rem; margin-bottom:1.5rem;">
                 <label style="font-weight:700; font-size:0.875rem; color:var(--color-primary); display:block; margin-bottom:1rem;">
@@ -303,7 +304,7 @@ $is_trust = ($type_sec == '9');
                             Affiché sur la bannière en page d'accueil.
                         </small>
                     </div>
-                    <?php if(!$is_ticker) { ?>
+                    <?php if(!$is_ticker && !$is_catrapide) { ?>
                     <div class="form-group">
                         <label class="form-label">Contenu / Sous-titre <small style="color:var(--color-text-muted)">(Pour Trust)</small></label>
                         <textarea name="contenu" class="admin-input" rows="2" placeholder="Description courte..."></textarea>
@@ -315,7 +316,7 @@ $is_trust = ($type_sec == '9');
                         <label class="form-label">Lien de destination <small style="color:var(--color-text-muted)">(Optionnel)</small></label>
                         <input type="text" name="lien" class="admin-input" placeholder="categorie.php?link=smartphones">
                     </div>
-                    <?php if(!$is_ticker && !$is_trust) { ?>
+                    <?php if(!$is_ticker && !$is_trust && !$is_catrapide) { ?>
                     <div class="form-group">
                         <label class="form-label">Texte du bouton (Optionnel)</label>
                         <input type="text" name="titre_bouton" class="admin-input" placeholder="Ex: Découvrez, Acheter, Voir plus...">

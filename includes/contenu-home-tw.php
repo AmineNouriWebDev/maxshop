@@ -84,7 +84,7 @@
     flex: 0 0 calc(25% - 0.5rem);
     min-width: 75px;
     padding: 1rem 0.25rem 0.875rem;
-    --categ-accent: #3b82f6; /* Modern Blue/Indigo */
+    --categ-accent: var(--shop-primary);
 }
 @media (min-width: 640px) {
     .hp-categ-card { 
