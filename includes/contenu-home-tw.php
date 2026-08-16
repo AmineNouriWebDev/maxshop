@@ -45,9 +45,9 @@
   border-bottom: 1px solid var(--shop-border);
   padding: 1.25rem 0;
 }
-.hp-trust-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-@media (min-width: 640px)  { .hp-trust-grid { grid-template-columns: repeat(4, 1fr); } }
+.hp-trust-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; }
 .hp-trust-item {
+  width: calc(50% - 0.5rem);
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -55,6 +55,7 @@
   border-radius: 0.75rem;
   transition: background 200ms ease;
 }
+@media (min-width: 640px) { .hp-trust-item { width: calc(25% - 0.75rem); min-width: 220px; flex: 1 1 auto; max-width: 300px; } }
 .hp-trust-item:hover { background: color-mix(in srgb, var(--shop-primary) 5%, transparent); }
 .hp-trust-icon {
   width: 42px; height: 42px;

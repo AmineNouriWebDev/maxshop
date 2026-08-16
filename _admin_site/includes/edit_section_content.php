@@ -141,9 +141,13 @@ if (isset($_POST['action']) && $_POST['action'] == 'mod' ){
         <div class="admin-card">
             <div class="admin-card-body">
                 <form method="POST" enctype="multipart/form-data" novalidate="novalidate">
-                    <?php $is_ticker = (typeSectionBloc($_GET['idb']) == '8'); ?>
+                    <?php 
+$type_sec = typeSectionBloc($_GET['idb']);
+$is_ticker = ($type_sec == '8');
+$is_trust = ($type_sec == '9');
+?>
 
-                    <?php if(!$is_ticker) { ?>
+                    <?php if(!$is_ticker && !$is_trust) { ?>
                     <!-- IMAGE SECTION -->
                     <div style="background:color-mix(in srgb, var(--color-primary) 4%, transparent); border:1px dashed color-mix(in srgb, var(--color-primary) 35%, transparent); border-radius:0.75rem; padding:1.25rem; margin-bottom:1.5rem;">
                         <label style="font-weight:700; font-size:0.875rem; color:var(--color-primary); display:block; margin-bottom:1rem;">
@@ -254,7 +258,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'mod' ){
                                     </small>
                                 </div>
                             </div>
-                            <?php if(!$is_ticker) { ?>
+                            <?php if(!$is_ticker && !$is_trust) { ?>
                             <div class="form-group">
                                 <label class="form-label">Contenu / Sous-titre <small style="color:var(--color-text-muted)">(Pour Trust)</small></label>
                                 <div class="controls">
@@ -273,7 +277,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'mod' ){
                                     </small>
                                 </div>
                             </div>
-                            <?php if(!$is_ticker) { ?>
+                            <?php if(!$is_ticker && !$is_trust) { ?>
                             <div class="form-group">
                                 <label class="form-label">Texte du bouton (Optionnel)</label>
                                 <div class="controls">
