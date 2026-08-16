@@ -1,0 +1,764 @@
+<?php 
+    include_once("_admin_site/includes/fonctions/fction_codes_promo.php");
+
+    //$url="https://api.preprod.konnect.network/api/v2/payments/init-payment";
+    //$key_api="6604435ff85f11d7b8d67d67:yTvOzwXT1FL0tgc2Wu17";
+    //$wallet="6604435ff85f11d7b8d67d6e";
+
+    if(isset($_POST['action']) && $_POST['action']=="confirm_cmd" ){
+        $id_client         = sanitize($_SESSION['client_id']);
+        $moyen_livraison   = isset($_SESSION['shipping']) ? sanitize($_SESSION['shipping']) : '';
+        $moyen_paiement    = sanitize($_POST['paymentMethod']);
+        $datec             = timestampTD(date("d/m/Y H:i:s"));
+        $montant_globale   = sanitize($_POST['soustotal']);
+        $globale           = sanitize($_POST['total']);
+        $nom               = sanitize($_POST['nom']);
+        $prenom            = sanitize($_POST['prenom']);
+        $email             = sanitize($_POST['email']);
+        $adresse           = sanitize($_POST['adresse']);
+        $ville             = sanitize($_POST['ville']);
+        $gouvernorat       = sanitize($_POST['gouvernorat']);
+        $cp                = sanitize($_POST['cp']);
+        $phone             = sanitize($_POST['phone']);
+
+		$whatsapp_code = sanitize($_POST['whatsapp_code'] ?? '');
+		$whatsapp_num = sanitize($_POST['whatsapp_num'] ?? '');
+		$whatsapp_post = ($whatsapp_num != '') ? $whatsapp_code . $whatsapp_num : '';
+
+        $commentaire       = sanitize($_POST['commentaire']);
+        $frais_livraison   = sanitize($_POST['frais_livraison']);
+        $etat              = '1';
+        $descriptionCmd    ='';
+        $urlOg = '';
+     
+     
+        
+        $requete = 'INSERT INTO `commandes` 
+        (`idclient`, `date`, `sous_total`, `total`, `moyen_paiement`, `moyen_livraison`, `frais_livraison`, `nom`, `prenom`, `email`, `adresse`, `ville`, `cp`, `tel`, `whatsapp`, `commentaire`, `remise`, `code_promo`, `remise_promo`, `date_paiement`, `lien_paiement`, `ref_paiement`, `code_envoi`, `code`, `cmd_express`, `etat`) 
+        VALUES
+        ("'.$id_client .'", "'. $datec .'", "'. $montant_globale .'", "'. $globale .'", "'. $moyen_paiement .'", "0", "'.$frais_livraison.'", "'. $nom .'","'. $prenom .'","'. $email .'","'. $adresse .'", "'. $ville .'", "'. $cp .'","'. $phone .'", "'. $whatsapp_post .'", "'. $commentaire .'", "0.000", "'.($_SESSION['panier']['promo_code'] ?? '').'", "'.($_SESSION['panier']['promo_discount'] ?? '0.000').'", "", "", "", "", "", "", "'.$etat.'")';
+		$connexion = ouvrirCnx() or die("erreur cnx");
+	    $resultat  = mysqli_query($connexion, $requete);	
+	    $id_cmd    = mysqli_insert_id($connexion);
+        $nombre_cmd =  sprintf("%05d", $id_cmd);
+		$code_cmd  = date("y").date("m").$nombre_cmd;
+		
+        
+		$cmd = $id_cmd;
+		
+		        $client = nomClient($id_client).' '.prenomClient($id_client);
+    		    $email  = emailClient($id_client);
+    		    
+    		    $headersMail  = 'MIME-Version: 1.0' . "\r\n";
+    		    $headersMail .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
+    		    $sender_email = envoiEmail(9);
+    		    $headersMail .= 'From:'.$nom_site.' <'.$sender_email.'>'. "\r\n";
+    		    $sujet    = sujetEmail(9);
+    		    $sujet    = str_replace('%%NCMD%%',$cmd,$sujet);
+    		    $contenumsg =  messageEmail(9);
+    		    $contenumsg =  str_replace('%%NOMCLT%%',$client,$contenumsg);
+    		    $contenumsg =  str_replace('%%MNTCMD%%',totalCommande($cmd),$contenumsg);
+    		    $contenumsg =  str_replace('%%DETAILSCMD%%',detailsCommande($cmd),$contenumsg);
+    		    $contenumsg .= 'Email client : '.$email;
+    		    $contenumsg .= '<br/> Commentaire : '.$commentaire;
+    		    //echo $contenumsg;
+    		    if($_SERVER['SERVER_NAME'] != 'localhost') {
+    		        @mail($email_contact, $sujet, $contenumsg, $headersMail, "-f ".$sender_email."");
+    		    }
+    		    
+		
+		$requete_cmd = 'UPDATE `commandes` set `code`="'.$code_cmd.'" WHERE `id`="'.$id_cmd.'"';
+		$resultat_cmd = executeRequete($requete_cmd); 
+		
+        // Incrémenter l'utilisation du code promo
+        if (!empty($_SESSION['panier']['promo_code'])) {
+            include_once("_admin_site/includes/fonctions/fction_codes_promo.php");
+            incrementerUtilisationCodePromo($_SESSION['panier']['promo_code']);
+        }
+		
+		$nbArticles=count($_SESSION['panier']['idcart']);
+		//echo $nbArticles;
+		$total_globale = 0;
+		  for ($i=0 ;$i < $nbArticles ; $i++) {
+			if($_SESSION['panier']['promo'][$i]) {
+			  $prix1 = $_SESSION['panier']['promo'][$i];
+			  $totalProduit = $_SESSION['panier']['promo'][$i]*$_SESSION['panier']['qte_prd'][$i];
+  		   } else {
+			  $prix1 = $_SESSION['panier']['price'][$i];
+			  $totalProduit = $_SESSION['panier']['price'][$i]*$_SESSION['panier']['qte_prd'][$i];
+		  }
+		   $prix  = $_SESSION['panier']['promo'][$i];
+		   $total = $_SESSION['panier']['qte_prd'][$i] * $prix1;
+		   
+		   $prod_name = !empty($_SESSION['panier']['name'][$i]) ? $_SESSION['panier']['name'][$i] : titreProduits($_SESSION['panier']['idcart'][$i]);
+		   $descriptionCmd .= $_SESSION['panier']['qte_prd'][$i].' x '.$prod_name;
+		   
+		   $total_globale = $total_globale + $total;
+		  //echo ($_SESSION['panier']['idcart'][$i]);exit; 	 		  
+		   $valeur_promo = !empty($_SESSION['panier']['promo'][$i]) ? $_SESSION['panier']['promo'][$i] : '0.000';
+		   
+		   $requete_ligne  =  "INSERT INTO `ligne_commande` 
+		  (`idcommande`, `id_produit`, `nom_produit`, `quantite`, `prix`, `remise`, `prix_promo`, `total`, `code_barre`, `notification`, `commentaire`, `date`, `etat`)
+		  VALUES
+		  ('". $id_cmd ."', '". $_SESSION['panier']['idcart'][$i] ."', '". sanitize($prod_name) ."', '". $_SESSION['panier']['qte_prd'][$i] ."', '". $_SESSION['panier']['price'][$i] ."', '0.000', '". $valeur_promo ."', '". $totalProduit ."', '', '0', '', '". $datec ."',  '".$etat."')";
+		  //echo $requete_ligne; exit;
+	      $resultat_ligne = executeRequete($requete_ligne);
+		    
+			$quantite_produit = quantiteProduits($_SESSION['panier']['idcart'][$i])-$_SESSION['panier']['qte_prd'][$i];
+			
+			
+			$urlOg .= $descriptionCmd." / ";
+			
+			$requete2 = 'UPDATE `produits` set `quantite`="'. $quantite_produit .'" WHERE `id`="'.$_SESSION['panier']['idcart'][$i].'"';
+			$result2  = executeRequete($requete2);
+			
+         } 
+
+		// ──────────────────────────────────────────────────────────
+		// Confiva Logistics API - Création du colis
+		// ──────────────────────────────────────────────────────────
+		$confiva_key = !empty($confiva_api_key) ? $confiva_api_key : '';
+		if(!empty($confiva_key)) {
+		    // On nettoie le contenu
+		    $clean_contenu = strip_tags(str_replace(' x ', 'x', $descriptionCmd));
+		    
+		    $confiva_data = [
+		        'nom_client' => $nom . ' ' . $prenom,
+		        'adresse'    => $adresse,
+		        'gouvernorat'=> $gouvernorat, // La liste exacte du select
+		        'city'       => $ville,
+		        'telephone'  => $phone,
+		        'prix'       => $globale,
+		        'contenu'    => substr($clean_contenu, 0, 100), // Limite pour sécurité
+		        'echange'    => "0",
+		        'autoriser_ouverture' => "0"
+		    ];
+		    
+		    $chConf = curl_init('https://expediteur.confiva-logistics.com/api/client/colis/create');
+		    curl_setopt($chConf, CURLOPT_RETURNTRANSFER, true);
+		    curl_setopt($chConf, CURLOPT_POST, true);
+		    curl_setopt($chConf, CURLOPT_HTTPHEADER, [
+		        'Content-Type: application/json',
+		        'x-api-key: ' . $confiva_key
+		    ]);
+		    curl_setopt($chConf, CURLOPT_POSTFIELDS, json_encode($confiva_data));
+		    curl_setopt($chConf, CURLOPT_TIMEOUT, 5); // Timeout pour ne pas bloquer
+		    curl_setopt($chConf, CURLOPT_SSL_VERIFYPEER, false);
+		    curl_setopt($chConf, CURLOPT_SSL_VERIFYHOST, false);
+		    
+		    $confiva_resp = curl_exec($chConf);
+		    $confiva_code = curl_getinfo($chConf, CURLINFO_HTTP_CODE);
+		    $confiva_error = curl_error($chConf);
+		    curl_close($chConf);
+		    
+		    file_put_contents('debug_confiva.txt', "Time: " . date('Y-m-d H:i:s') . "\nEndpoint: https://expediteur.confiva-logistics.com/api/client/colis/create\nPayload: " . json_encode($confiva_data) . "\nKey: " . substr($confiva_key, 0, 5) . "...\nHTTP Code: $confiva_code\nResponse: $confiva_resp\ncURL Error: $confiva_error\n\n", FILE_APPEND);
+		    
+		    if ($confiva_code == 200 || $confiva_code == 201) {
+		        $c_res = json_decode($confiva_resp, true);
+		        if(isset($c_res['code_barres']) && !empty($c_res['code_barres'])) {
+		            $barcode = sanitize($c_res['code_barres']);
+		            executeRequete("UPDATE `commandes` SET `code_envoi`='".$barcode."' WHERE `id`='".$id_cmd."'");
+		        }
+		    }
+		}
+
+		// ──────────────────────────────────────────────────────────
+		// Telegram + n8n notification after successful order insert
+		// ──────────────────────────────────────────────────────────
+		$tg_token  = !empty($telegram_bot_token) ? $telegram_bot_token : '';
+		$tg_chat   = !empty($telegram_chat_id)   ? $telegram_chat_id   : '';
+		$n8n_url   = !empty($n8n_webhook_url)    ? $n8n_webhook_url    : '';
+
+		// Build summary items list
+		$itemsSummary = '';
+		for ($ii = 0; $ii < count($_SESSION['panier']['idcart'] ?? []); $ii++) {
+			$p_name = !empty($_SESSION['panier']['name'][$ii]) ? $_SESSION['panier']['name'][$ii] : titreProduits($_SESSION['panier']['idcart'][$ii]);
+			$itemsSummary .= "• " . $_SESSION['panier']['qte_prd'][$ii] . " x " . $p_name . "\n";
+		}
+		$moyen_paiement_label = moyen_paiement($moyen_paiement);
+
+		// ─── 1. Direct Telegram Bot API ──────────────────────────
+		if (!empty($tg_token) && !empty($tg_chat)) {
+			$message = "🛒 *NOUVELLE COMMANDE #{$id_cmd}*\n\n"
+				. "👤 *Client :* {$nom} {$prenom}\n"
+				. "📞 *Tél :* {$phone}\n"
+				. "📧 *Email :* {$email}\n"
+				. "📍 *Adresse :* {$adresse}, {$ville}\n"
+				. "💳 *Paiement :* {$moyen_paiement_label}\n\n"
+				. "📦 *Articles :*\n{$itemsSummary}\n";
+			
+            if (!empty($_SESSION['panier']['promo_code'])) {
+                $message .= "🎫 *Code Promo :* {$_SESSION['panier']['promo_code']} (-{$_SESSION['panier']['promo_discount']} DT)\n";
+            }
+            
+            $message .= "💰 *Total :* {$globale} DT\n"
+				. "💬 *Commentaire :* {$commentaire}";
+
+			$tg_url = "https://api.telegram.org/bot{$tg_token}/sendMessage";
+			$ch = curl_init($tg_url);
+			curl_setopt_array($ch, [
+				CURLOPT_POST           => true,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_TIMEOUT        => 5,
+				CURLOPT_POSTFIELDS     => json_encode([
+					'chat_id'    => $tg_chat,
+					'text'       => $message,
+					'parse_mode' => 'Markdown',
+				]),
+				CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+			]);
+			@curl_exec($ch);
+			@curl_close($ch);
+		}
+
+		// ─── 2. n8n Webhook (optional) ───────────────────────────
+		if (!empty($n8n_url)) {
+			$payload = json_encode([
+				'bot_token'       => $tg_token,
+				'chat_id'         => $tg_chat,
+				'order_id'        => $id_cmd,
+				'order_code'      => $code_cmd,
+				'customer_name'   => "{$nom} {$prenom}",
+				'customer_phone'  => $phone,
+				'customer_email'  => $email,
+				'address'         => "{$adresse}, {$ville}, {$cp}",
+				'payment_method'  => $moyen_paiement_label,
+				'items'           => $itemsSummary,
+                'promo_code'      => $_SESSION['panier']['promo_code'] ?? '',
+                'promo_discount'  => $_SESSION['panier']['promo_discount'] ?? 0,
+				'total'           => $globale,
+				'comment'         => $commentaire,
+			]);
+			$ch2 = curl_init($n8n_url);
+			curl_setopt_array($ch2, [
+				CURLOPT_POST           => true,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_TIMEOUT        => 5,
+				CURLOPT_POSTFIELDS     => $payload,
+				CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+			]);
+			@curl_exec($ch2);
+			@curl_close($ch2);
+		}
+
+		// ─── 3. Email Client (Commande enregistrée - Template 2) ───
+		$clientName = $nom.' '.$prenom;
+		$sujetClient = sujetEmail(2);
+		$sujetClient = str_replace('%%CODECMD%%', $code_cmd, $sujetClient);
+		
+		$contenuClient = messageEmail(2);
+		$contenuClient = str_replace('%%NOMCLT%%', $clientName, $contenuClient);
+		$contenuClient = str_replace('%%CODECMD%%', $code_cmd, $contenuClient);
+		$contenuClient = str_replace('%%DETAILSCMD%%', detailsCommande($id_cmd), $contenuClient);
+		// Le lien de paiement sera injecté ultérieurement si applicable (Konnect)
+		
+		$payload_client = [
+			'event'         => 'order_confirmation',
+			'customer_email'=> $email,
+			'email_subject' => $sujetClient,
+			'email_html'    => $contenuClient,
+			'order_id'      => $id_cmd
+		];
+		// On sauvegarde le payload initial. S'il n'y a pas de lien de paiement, on l'envoie tout de suite.
+		$send_initial_email = true;
+		// ─────────────────────────────────────────────────────────
+		
+		if($moyen_paiement == 10){
+		    $urlOg = rtrim($urlOg," / ");
+		    $payment_link = "https://wa.me/".$cmd_num_whatsapp."?text=".urlencode(str_replace('%%lien_produit%%',$urlOg,$message_cmd_whatsapp));
+		/*-------------------------------------------------------- Payment part ----------------------------------------------------------------------------*/
+		//echo str_replace('.','',$globale);
+		/*$descriptionCmd ="Paiement commande Technoplus.tn :".$cmd;
+		$headers = array('Content-type: application/json','x-api-key: '.$key_api);
+        $payload = json_encode(array(
+                "receiverWalletId" => $wallet,
+                "token" => "TND",
+                "amount" => str_replace('.','',$globale),
+                'type' => 'immediate',
+                'description' => $descriptionCmd,//'payment description'
+                'acceptedPaymentMethods' => array('bank_card'),
+                //'lifespan' => '10',
+                'checkoutForm' => false,
+                'addPaymentFeesToAmount' => false,
+                'firstName' => $prenom,
+                'lastName' => $nom,
+                'phoneNumber' => $phone,
+                'email' => $email,
+                'orderId' => $cmd,
+                'webhook' => 'https://technoplus.tn/payment_webhook.php',
+                'silentWebhook' => 'true',
+                'successUrl' => 'https://technoplus.tn/payment-success.php',
+                'failUrl' => 'https://technoplus.tn/payment-fail.php',
+                'theme' => 'light',
+        ));
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url_payment);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_HTTPHEADER,$headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+    
+        $response = curl_exec($ch);
+        //echo curl_getinfo($ch, CURLINFO_HTTP_CODE)." - ".$response; exit;
+  
+        if (curl_errno($ch)) {
+              echo curl_error($ch);
+              die();
+        }else{
+        
+            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if($http_code == intval(200)){
+                $response1=json_decode($response);
+                $payment_ref = $response1->paymentRef;
+                //print_r($response1); 
+                $payment_link=$response1->payUrl;
+    		
+                executeRequete("UPDATE `commandes` set `lien_paiement`='".$payment_link."',`ref_paiement`='".$payment_ref."' WHERE `id`='".$cmd."'");
+                
+    		    // Injection du lien dans le payload initial
+    		    $payload_client['email_html'] = str_replace('%%PLATEFORM%%', $payment_link, $payload_client['email_html']);
+    		    envoiEmail_n8n($payload_client);
+    		    $send_initial_email = false; // Le mail est déjà envoyé avec le lien
+    		    
+            }
+            else{
+              //echo  $http_code." - ". $response; //"Ressource introuvable : " . $http_code;
+            }
+        } 
+        */
+
+        /*---------------------------------------------------------------------------------------------------------------------------------------------------*/
+        
+        }
+
+		if ($send_initial_email) {
+			$payload_client['email_html'] = str_replace('%%PLATEFORM%%', '', $payload_client['email_html']);
+			envoiEmail_n8n($payload_client);
+		}
+
+        if($moyen_paiement == 11){
+        $urlOg .= $descriptionCmd;
+        $urlOg = rtrim($urlOg," / ");
+            $payment_link = "https://wa.me/".$cmd_num_whatsapp."?text=".urlencode("Commande Express / Paiement D17:".$urlOg);
+        }
+        if($moyen_paiement == 12){
+        $urlOg .= $descriptionCmd;
+        $urlOg = rtrim($urlOg," / ");
+            $payment_link = "https://wa.me/".$cmd_num_whatsapp."?text=".urlencode("Commande Express / Paiement Paypal:".$urlOg);
+        }
+        
+		$msg="Votre commande a été bien enregistrée.";
+
+		   unset($_SESSION['panier']);
+           unset($_SESSION['coupon']);
+		   if($moyen_paiement == 10 || $moyen_paiement == 11 || $moyen_paiement == 12){
+?>
+	<script language="javascript">
+      <!--
+      window.open('<?php echo $payment_link;?>');
+      window.location = '<?php echo lienConfirm($cmd); ?>';
+      -->
+    </script>
+<?php 
+    }else{ ?>
+    <script language="javascript">
+	 <!--
+	  window.location = '<?php echo lienConfirm($cmd); ?>';
+	 -->
+	</script>
+<?php }
+        
+} ?>    
+    
+<?php
+$whatsappRaw = whatsappClient($id_client);
+$whatsapp_code = '+216';
+$whatsapp_num = $whatsappRaw;
+$supported_codes = ['+216', '+33', '+39'];
+foreach($supported_codes as $code) {
+    if (strpos($whatsappRaw, $code) === 0) {
+        $whatsapp_code = $code;
+        $whatsapp_num = substr($whatsappRaw, strlen($code));
+        break;
+    }
+}
+?>
+    <div class="container py-5">
+        <form action="<?php echo lienCommande(); ?>" method="post">
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <h2 style="color:var(--shop-text-primary); font-weight:700; margin-bottom:1rem;">Caisse</h2>
+                    <div style="height:2px; width:60px; background:var(--shop-primary); margin-bottom:2rem;"></div>
+                </div>
+
+                <div class="col-12 col-lg-8">
+                    <div class="cx-form-panel cx-surface cx-border" style="padding: 2rem; border-radius: 1rem; margin-bottom: 2rem;">
+                        <h4 style="color:var(--shop-text-primary); margin-bottom:1.5rem; font-weight:600;">Détails de facturation</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label style="display:block; margin-bottom:.5rem; color:var(--shop-text-secondary); font-weight:500;">Nom</label>
+                                <input type="text" name="nom" class="cx-input" id="last_name" value="<?php echo nomClient($id_client); ?>" placeholder="Nom" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label style="display:block; margin-bottom:.5rem; color:var(--shop-text-secondary); font-weight:500;">Prénom</label>
+                                <input type="text" name="prenom" class="cx-input" id="first_name" value="<?php echo prenomClient($id_client); ?>" placeholder="Prénom" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label style="display:block; margin-bottom:.5rem; color:var(--shop-text-secondary); font-weight:500;">Email</label>
+                                <input type="email" name="email" class="cx-input" id="email" placeholder="Email" value="<?php echo emailClient($id_client); ?>" required>
+                            </div> 
+                            <div class="col-md-6 mb-3">
+                                <label style="display:block; margin-bottom:.5rem; color:var(--shop-text-secondary); font-weight:500;">N° téléphone <span class="text-danger">*</span></label>
+                                <input type="text" name="phone" class="cx-input" id="phone_number" placeholder="N° téléphone" value="" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label style="display:block; margin-bottom:.5rem; color:var(--shop-text-secondary); font-weight:500;">Numéro WhatsApp (Optionnel, mais recommandé)</label>
+                                <div style="display:flex;">
+                                  <select name="whatsapp_code" class="cx-input" style="width: 130px; border-right: none; border-top-right-radius: 0; border-bottom-right-radius: 0; padding: 0 0.5rem; cursor: pointer;">
+                                      <?php include('includes/whatsapp_country_codes.php'); ?>
+                                  </select>
+                                  <input type="text" name="whatsapp_num" value="<?php echo htmlspecialchars($whatsapp_num); ?>" class="cx-input" style="border-top-left-radius: 0; border-bottom-left-radius: 0;" placeholder="Ex: 22 123 456">
+                                </div>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label style="display:block; margin-bottom:.5rem; color:var(--shop-text-secondary); font-weight:500;">Adresse</label>
+                                <input type="text" name="adresse" class="cx-input" id="street_address" placeholder="Adresse" value="" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label style="display:block; margin-bottom:.5rem; color:var(--shop-text-secondary); font-weight:500;">Gouvernorat <span class="text-danger">*</span></label>
+                                <select name="gouvernorat" class="cx-input" required>
+                                    <option value="">Choisir un gouvernorat...</option>
+                                    <?php
+                                    $govs = ['Ariana','Ben Arous','Bizerte','Béja','Gabès','Gafsa','Jendouba','Kairouan','Kasserine','Kébili','La Mannouba','Le Kef','Mahdia','Monastir','Médenine','Nabeul','Sfax','Sidi Bouzid','Siliana','Sousse','Tataouine','Tozeur','Tunis','Zaghouan'];
+                                    foreach($govs as $g) { echo "<option value=\"$g\">$g</option>"; }
+                                    ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label style="display:block; margin-bottom:.5rem; color:var(--shop-text-secondary); font-weight:500;">Délégation / Ville <span class="text-danger">*</span></label>
+                                <input type="text" name="ville" class="cx-input" id="city" placeholder="Ville" value="" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label style="display:block; margin-bottom:.5rem; color:var(--shop-text-secondary); font-weight:500;">Code postal</label>
+                                <input type="text" name="cp" class="cx-input" id="zipCode" placeholder="Code postale" value="" required>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label style="display:block; margin-bottom:.5rem; color:var(--shop-text-secondary); font-weight:500;">Commentaire</label>
+                                <textarea name="commentaire" class="cx-input" id="comment" cols="30" rows="4" placeholder="Laissez un commentaire sur votre commande"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <?php $nbArticles=count($_SESSION['panier']['idcart']); ?>
+                <div class="col-12 col-lg-4">
+                    <div class="cx-form-panel cx-surface cx-border" style="padding: 2rem; border-radius: 1rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                            <h4 style="color:var(--shop-text-primary); font-weight:600; margin:0;">Votre panier</h4>
+                            <span class="badge badge-primary badge-pill" style="background:var(--shop-primary); font-size:1rem; padding:0.5em 0.8em; border-radius:1rem;"><?php echo $nbArticles; ?></span>
+                        </div>
+                        
+                        <ul class="summary-table" style="list-style:none; padding:0; margin:0 0 2rem 0;">
+								<?php 
+								$sous_total = 0;
+								$total = 0;
+								$frais = 0;
+								$devise = "DT";
+								$cout = "0.000 DT";
+								
+								if($nbArticles) { 
+								$type='';
+								   for($i = 0; $i < count($_SESSION['panier']['idcart']); $i++)
+                                    {
+                                        $pid = $_SESSION['panier']['idcart'][$i];
+                                        $total_ligne = number_format($_SESSION['panier']['total'][$i], 3, '.', '');
+					                    $sous_total = $sous_total + $total_ligne;
+					                    $type .= typeProduits($pid).',';
+                                        
+                                        $p_name = !empty($_SESSION['panier']['name'][$i]) ? $_SESSION['panier']['name'][$i] : titreProduits($pid);
+                                        $is_eligible = false;
+                                        if (isset($_SESSION['panier']['promo_code'])) {
+                                            $is_eligible = isProductEligibleForPromo($pid, $_SESSION['panier']['promo_code']);
+                                        }
+                                        ?>
+                                        <li id="cart_item_<?php echo $i; ?>" style="display:flex; justify-content:space-between; padding:0.5rem 0; font-size:0.95rem; color:var(--shop-text-secondary);">
+                                            <div style="flex:1;">
+                                                <?php echo $_SESSION['panier']['qte_prd'][$i]; ?> x <?php echo $p_name; ?>
+                                                
+                                                <span class="badge badge-success ml-1 promo-badge" style="font-size: 0.65rem; vertical-align: middle; display: <?php echo $is_eligible ? 'inline-block' : 'none'; ?>;">Éligible promo</span>
+                                            </div>
+                                            <span style="font-weight:600;"><?php echo $total_ligne; ?> <?php echo $devise; ?></span>
+                                        </li>
+                                        <?php
+                                    }
+                                    $type = rtrim($type,',');
+                                    $req = "SELECT * FROM `frais_livraison` WHERE min < $sous_total AND max > $sous_total  ORDER BY `id`";
+                        			$res = executeRequete($req);
+                        			$numres = mysqli_num_rows($res);
+                        			if($numres > 0){
+                            			while ($data = mysqli_fetch_array($res))
+                            			{
+                            												
+                            				$id=afficheChamp($data['id']);
+                            				if(in_array('E',explode(',',$type))){
+                                                $frais = valeurFraisLivraison($id);
+                            				}else{
+                                                $frais = '0.000';
+                            				}
+                                            
+                                            $cout = number_format($frais,3, '.', ' ').' DT';
+                                            $sous_total1 = $frais + $sous_total;
+                                            $total  = number_format($sous_total1,3, '.', '');
+                                            
+                            			}
+                        			}else{
+                        			    
+                            			$req1 = "SELECT * FROM `frais_livraison` WHERE min < $sous_total AND max ='0'  ORDER BY `id`";
+                            			$res1 = executeRequete($req1);
+                            			$numres1 = mysqli_num_rows($res1);
+                            			if($numres1 > 0){
+                            			while ($data1 = mysqli_fetch_array($res1))
+                                			{
+                                												
+                                				$id1=afficheChamp($data1['id']);
+                                                if(in_array('E',explode(',',$type))){
+                                                    $frais = valeurFraisLivraison($id1);
+                                				}else{
+                                                    $frais = '0.000';
+                                				}
+                                                
+                                                $cout = 'Gratuit';
+                                                $sous_total1 = $frais + $sous_total;
+                                                $total  = number_format($sous_total1,3, '.', '');
+                                                
+                                			}
+                            			}
+                        			    
+                        			}
+							    ?>
+                                <li style="display:flex; justify-content:space-between; padding:0.75rem 0; font-size:1.05rem; color:var(--shop-text-primary); border-bottom:1px solid var(--shop-border);"><span>Sous-total:</span> <span style="font-weight:600;"><?php echo number_format($sous_total,3, '.', ' ').' '.$devise; ?> </span></li>
+                                
+                                <li id="row_promo" style="display:<?php echo isset($_SESSION['panier']['promo_discount']) ? 'flex' : 'none'; ?>; justify-content:space-between; padding:0.75rem 0; font-size:1.05rem; color:#16a34a; border-bottom:1px solid var(--shop-border);">
+                                    <span>Remise promo (<span id="txt_promo_code"><?php echo $_SESSION['panier']['promo_code'] ?? ''; ?></span>):</span> 
+                                    <span style="font-weight:600;">- <span id="val_promo_discount"><?php echo number_format($_SESSION['panier']['promo_discount'] ?? 0, 3, '.', ' '); ?></span> <?php echo $devise; ?></span>
+                                </li>
+<?php 
+                                    if(isset($_SESSION['panier']['promo_discount'])) {
+                                        $sous_total1 = ($sous_total - $_SESSION['panier']['promo_discount']) + $frais;
+                                        $total = number_format($sous_total1, 3, '.', '');
+                                    }
+?>
+     
+                                <li style="display:flex; justify-content:space-between; padding:0.75rem 0; font-size:1.05rem; color:var(--shop-text-primary); border-bottom:1px solid var(--shop-border);"><span>Livraison:</span> <span id="cout_mod_liv" style="font-weight:600;"><?php echo $cout; ?></span></li>
+                                
+                                <li style="display:flex; justify-content:space-between; padding:1rem 0 0 0; font-size:1.2rem; color:var(--shop-text-primary); font-weight:700;"><span>Total:</span> <span id="total_cmd" style="color:var(--shop-primary);"><?php echo $total.' '.$devise; ?> </span></li>
+                            </ul>
+
+                            <div class="promo-box mb-4" style="background: #f8fafc; padding: 1rem; border-radius: 0.75rem; border: 1px dashed #cbd5e1;">
+                                <label style="display:block; margin-bottom:.5rem; color:var(--shop-text-secondary); font-size:0.875rem; font-weight:600;">Avez-vous un code promo ?</label>
+                                <div style="display:flex; gap:0.5rem;">
+                                    <input type="text" id="input_promo" class="cx-input" placeholder="Entrez votre code" style="padding: 0.5rem 0.75rem; font-size: 0.875rem; text-transform: uppercase;" value="<?php echo $_SESSION['panier']['promo_code'] ?? ''; ?>" oninput="this.value = this.value.toUpperCase(); debounceApplyPromo();">
+                                    <button type="button" onclick="applyPromo()" class="cx-btn" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Appliquer</button>
+                                </div>
+                                <div id="msg_promo" style="margin-top:0.5rem; font-size:0.75rem; display:none;"></div>
+                            </div>
+                        <?php } ?>
+                        <input type="hidden" name="soustotal" value="<?php echo number_format($sous_total,3, '.', ''); ?>" />
+                        <input type="hidden" name="total" id="total_commande" value="<?php echo $total; ?>" />
+                        <input type="hidden" name="frais_livraison" id="frais_livraison" value="<?php echo $frais; ?>" />
+
+
+                        <div class="payment-method mb-5">
+                            <h5 style="color:var(--shop-text-primary); font-weight:600; margin-bottom:1.5rem; font-size:1.1rem;">
+                                <i class="fa fa-credit-card me-2 text-primary"></i> Moyen de paiement
+                            </h5>
+                            
+                            <style>
+                            .payment-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+                            .pay-card { border: 2px solid var(--shop-border, #e5e7eb); border-radius: 1rem; padding: 1.25rem 0.75rem; text-align: center; cursor: pointer; background: var(--shop-surface, #fff); transition: all 0.25s ease; display:flex; flex-direction:column; align-items:center; justify-content:center; position: relative; }
+                            .pay-card:hover { border-color: var(--shop-primary); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+                            .pay-card.selected { border-color: var(--shop-primary); background: color-mix(in srgb, var(--shop-primary) 5%, var(--shop-surface)); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+                            .pay-card img { max-height: 48px; max-width: 100%; object-fit: contain; margin-bottom: 0.75rem; transition: transform 0.2s; }
+                            .pay-card:hover img { transform: scale(1.05); }
+                            .pay-card span { display: block; font-size: 0.85rem; font-weight: 700; color: var(--shop-text-primary); line-height: 1.3; }
+                            .pay-card .check-icon { position: absolute; top: 0.5rem; right: 0.5rem; color: var(--shop-primary); opacity: 0; transform: scale(0.5); transition: all 0.2s; }
+                            .pay-card.selected .check-icon { opacity: 1; transform: scale(1); }
+                            @media(max-width: 480px) { .payment-grid { grid-template-columns: repeat(2, 1fr); } }
+                            </style>
+
+                            <div class="payment-grid">
+                            <?php
+                                $requete = 'SELECT * FROM `moyens_paiement` WHERE `etat` = "1" AND `type` ="1"';
+                                $res     = executeRequete($requete);
+                                $first = true;
+                               while($datapay = mysqli_fetch_array($res)){
+                                    $logo_url = url_paiement($datapay['id']);
+                                    $img_src = ($logo_url != '' && strpos($logo_url, 'http') !== 0) ? $chemin_absolu.'media/paiement/'.$logo_url : $logo_url;
+                            ?>
+                            <label class="pay-card <?php echo $first ? 'selected' : ''; ?>" for="pay_<?php echo $datapay['id']; ?>">
+                                <input 
+                                    type="radio" 
+                                    name="paymentMethod" 
+                                    id="pay_<?php echo $datapay['id']; ?>"
+                                    value="<?php echo $datapay['id']; ?>" 
+                                    style="display:none;"
+                                    onclick="document.querySelectorAll('.pay-card').forEach(n=>n.classList.remove('selected')); this.parentElement.classList.add('selected');"
+                                    <?php if ($first) { echo 'checked required'; $first = false; } ?>
+                                >
+                                <div class="check-icon"><i class="fa fa-check-circle"></i></div>
+                                <?php if($img_src != ""): ?>
+                                    <img src="<?php echo htmlspecialchars($img_src); ?>" alt="<?php echo htmlspecialchars(moyen_paiement($datapay['id'])); ?>" onerror="this.style.display='none'">
+                                <?php else: ?>
+                                    <div style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: var(--shop-bg-alt); border-radius: 50%; margin-bottom: 0.75rem;">
+                                        <i class="fa fa-credit-card text-primary" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                <?php endif; ?>
+                                <span><?php echo moyen_paiement($datapay['id']); ?></span>
+                            </label>
+                            <?php } ?>
+                            </div>
+                        </div>
+
+
+                        <div class="cart-btn mt-50">
+                            <button type="submit" class="cx-btn" style="width: 100%;">Confirmer la commande</button>
+                            <input type="hidden" name="action" id="confirmVal"  value="confirm_cmd" />	
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        var promoTimeout = null;
+        function debounceApplyPromo() {
+            clearTimeout(promoTimeout);
+            promoTimeout = setTimeout(applyPromo, 600); // 600ms debounce
+        }
+        
+        function applyPromo() {
+            var code = document.getElementById('input_promo').value;
+            var msgBox = document.getElementById('msg_promo');
+            
+            if(!code) {
+                // Si le code est vide, on efface les badges et messages
+                msgBox.style.display = 'none';
+                document.getElementById('row_promo').style.display = 'none';
+                document.querySelectorAll('.promo-badge').forEach(function(badge) {
+                    badge.style.display = 'none';
+                });
+                var subtotal = parseFloat($('input[name="soustotal"]').val());
+                var frais = parseFloat($('input[name="frais_livraison"]').val());
+                var newTotal = (subtotal + frais).toFixed(3);
+                document.getElementById('total_cmd').innerText = newTotal + ' DT';
+                document.getElementById('total_commande').value = newTotal;
+                
+                // Appel silencieux pour vider la session
+                $.ajax({ url: '<?php echo $chemin_absolu; ?>ajax/ajax_validate_promo.php', type: 'POST', data: { code: '' }, dataType: 'json' });
+                return;
+            }
+            
+            $.ajax({
+                url: '<?php echo $chemin_absolu; ?>ajax/ajax_validate_promo.php',
+                type: 'POST',
+                data: { code: code },
+                dataType: 'json',
+                success: function(res) {
+                    msgBox.style.display = 'block';
+                    var message = res && res.message ? res.message : 'Erreur lors de la validation.';
+                    msgBox.innerText = message;
+                    
+                    if(res.valid) {
+                        msgBox.style.color = '#16a34a';
+                        document.getElementById('row_promo').style.display = 'flex';
+                        document.getElementById('txt_promo_code').innerText = res.promo.code;
+                        document.getElementById('val_promo_discount').innerText = res.reduction.toFixed(3);
+                        
+                        // Recalculate total
+                        var subtotal = parseFloat($('input[name="soustotal"]').val());
+                        var frais = parseFloat($('input[name="frais_livraison"]').val());
+                        var reduction = parseFloat(res.reduction);
+                        var newTotal = (subtotal - reduction + frais).toFixed(3);
+                        
+                        document.getElementById('total_cmd').innerText = newTotal + ' DT';
+                        document.getElementById('total_commande').value = newTotal;
+                        
+                        // Toggle individual items badges instantly
+                        var totalItems = <?php echo $nbArticles; ?>;
+                        for(var i=0; i<totalItems; i++) {
+                            var itemLine = document.getElementById('cart_item_' + i);
+                            if(itemLine) {
+                                var badge = itemLine.querySelector('.promo-badge');
+                                if(badge) {
+                                    if(res.eligible_indexes && res.eligible_indexes.includes(i)) {
+                                        badge.style.display = 'inline-block';
+                                    } else {
+                                        badge.style.display = 'none';
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        msgBox.style.color = '#dc2626';
+                        document.getElementById('row_promo').style.display = 'none';
+                        
+                        // Reset total
+                        var subtotal = parseFloat($('input[name="soustotal"]').val());
+                        var frais = parseFloat($('input[name="frais_livraison"]').val());
+                        var newTotal = (subtotal + frais).toFixed(3);
+                        
+                        document.getElementById('total_cmd').innerText = newTotal + ' DT';
+                        document.getElementById('total_commande').value = newTotal;
+                        
+                        // Hide all badges
+                        document.querySelectorAll('.promo-badge').forEach(function(badge) {
+                            badge.style.display = 'none';
+                        });
+                    }
+                }
+            });
+        }
+        /*function SetSessionPayment(val){
+            
+            if($("input[name='paymentMethod']:checked").length > 0){
+                if($("input[name='paymentMethod']:checked").val() == 9){
+			    var sous_total = $("input[name='soustotal']").val();
+			    var total ='';
+                $.ajax({
+                   type: "POST", 
+                   url: "includes/ml.php",
+    			   data: {"mod_liv":val,"sous_total":sous_total}, 
+    			   dataType: 'json',
+    	           success: function(json) { 
+    			      $('#cout_mod_liv').html(json['cout_ml_f']);
+    			      $('#total_cmd').html(json['sous_total']);
+    			      $('#frais_livraison').val(json['cout_ml']);
+    			      $('#total_commande').val(json['total']);
+    				  
+                    }
+ 
+                });
+                }
+                else{
+                    var sous_total = $("input[name='soustotal']").val();
+                    var frais_livraison = $("input[name='frais_livraison']").val();
+    			    var total =$("input[name='total']").val();
+                    $.ajax({
+                       type: "POST", 
+                       url: "includes/removeml.php",
+        			   data: {"frais_livraison":frais_livraison,"sous_total":sous_total,"total":total}, 
+        			   dataType: 'json',
+        	           success: function(json) { 
+        			      $('#cout_mod_liv').html(json['cout_ml_f']);
+        			      $('#total_cmd').html(json['sous_total']);
+        			      $('#frais_livraison').val(json['cout_ml']);
+        			      $('#total_commande').val(json['total']);
+        				  
+                        }
+     
+                    });
+                }
+            }
+        }*/
+    </script>

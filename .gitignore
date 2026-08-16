@@ -1,0 +1,50 @@
+# media/ (Included for deployment)
+# _admin_site/media/ (Included for deployment)
+
+# Node/Composer dependencies
+node_modules/
+vendor/
+
+# env.php (Environment-specific, ignored to protect production settings)
+env.php
+
+# Secrets and text files
+*secret*
+.env
+.env.example
+*.txt
+!robots.txt
+# root-deployment-offipro.txt is now ignored
+offipro-configurateur-camera.md
+
+# Docker local config
+Dockerfile
+docker-compose.yml
+
+# Media zips
+media/products/products.zip
+
+# Tailwind compiled output (included for deployment)
+!dist/css/main-style.css
+*.zip
+*.rar
+*.log
+
+# Databases and tests
+*.sql
+test_*.php
+_admin_site/test_*.php
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Any other temp files
+*.tmp
+*.bak
+error_log
+
+# Fichiers masqués du statut git (Locaux)
+_admin_site/debug_login.php
+error404.html
+media/products/4185-produits-1778766882-0-4189-produits-1777938048-0-smartphone-xiaomi-redmi-a5-4g-3go-64go-vert-lac-x.webp
