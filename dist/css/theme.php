@@ -180,5 +180,21 @@ html.dark,
     --shop-shadow-soft: 0 4px 24px rgba(0,0,0,0.25);
     --shop-shadow-card-hover: 0 8px 32px rgba(0,0,0,0.5);
 }
+
+/* ── Custom Scrollbar Global ── */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--shop-primary);
+    border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--shop-primary) 80%, black);
+}
 ";
 ?>

@@ -86,8 +86,24 @@
     				<div class="col-sm-6 text-left">				
     					<p style="font-size: 12px;"><?php echo $copyright; ?>  </p>
     				</div>
-    				<div class="col-sm-6 text-right">
-    				    <img src="dist/img/payment-card.png" class="img-fluid" style=" max-width: 350px;">
+    				<div class="col-sm-6 text-right" style="display:flex; justify-content:flex-end; gap:10px; align-items:center;">
+    				    <span style="font-size: 13px; font-weight: 600; color: #777; text-transform: uppercase;">
+                            <i class="fa fa-lock" style="margin-right:4px; color: var(--shop-primary, #5a31f4);"></i> Paiement sécurisé
+                        </span>
+                        <span style="width: 1px; height: 18px; background: #ddd; margin: 0 5px;"></span>
+    				    <?php
+    				        $req_pay = "SELECT * FROM `moyens_paiement` WHERE `etat` = '1' AND `type` = '1' ORDER BY `id`";
+    				        $res_pay = executeRequete($req_pay);
+    				        if ($res_pay) {
+    				            while ($pay = mysqli_fetch_array($res_pay)):
+    				              if (!empty($pay['url'])):
+    				          ?>
+    				              <img src="media/paiement/<?php echo $pay['url']; ?>" alt="<?php echo htmlspecialchars($pay['moyen']); ?>" title="<?php echo htmlspecialchars($pay['moyen']); ?>" class="img-fluid" style="max-height:30px;">
+    				          <?php 
+    				              endif;
+    				            endwhile; 
+    				        }
+    				    ?>
     				</div>
 				</div>
 			

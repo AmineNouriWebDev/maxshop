@@ -348,17 +348,7 @@
   var MAX = 4;
   var COMPARE_KEY = 'offipro_compare';
   
-  // Robust path handling for localhost or subfolder deployments
-  var baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, 2).join('/');
-  if (!window.location.hostname.includes('.') && window.location.pathname.startsWith('/shop/')) {
-    // We are likely on localhost/shop/
-    baseUrl = window.location.origin + '/shop';
-  } else if (window.location.hostname.includes('.') && !window.location.pathname.startsWith('/shop/')) {
-    // We are likely on production root
-    baseUrl = window.location.origin;
-  }
-  
-  var compareEndpoint = baseUrl + '/includes/compare-data.php';
+  var compareEndpoint = '<?php echo defined("CHEMIN") ? CHEMIN : "/"; ?>includes/compare-data.php';
 
   console.log('Compare feature initialized. Endpoint:', compareEndpoint);
 

@@ -267,8 +267,27 @@
       <?php echo $copyright ?? ''; ?>
       — Développé par <a href="https://maxsolving.com" target="_blank" rel="noopener">maxsolving</a>
     </p>
-    <div class="ft-payment">
-      <img src="dist/img/payment-card.png" alt="Méthodes de paiement acceptées">
+    <div class="ft-payment" style="display:flex; gap:10px; align-items:center;">
+      <span style="font-size: 0.8rem; font-weight: 700; color: var(--shop-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="color: var(--shop-primary);">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        Paiement sécurisé
+      </span>
+      <div style="width: 1.5px; height: 20px; background: var(--shop-border); margin: 0 4px; opacity: 0.8;"></div>
+      <?php
+        $req_pay = "SELECT * FROM `moyens_paiement` WHERE `etat` = '1' AND `type` = '1' ORDER BY `id`";
+        $res_pay = executeRequete($req_pay);
+        if ($res_pay) {
+            while ($pay = mysqli_fetch_array($res_pay)):
+              if (!empty($pay['url'])):
+          ?>
+              <img src="media/paiement/<?php echo $pay['url']; ?>" alt="<?php echo htmlspecialchars($pay['moyen']); ?>" title="<?php echo htmlspecialchars($pay['moyen']); ?>">
+          <?php 
+              endif;
+            endwhile; 
+        }
+      ?>
     </div>
   </div>
 

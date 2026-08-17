@@ -1,7 +1,7 @@
 
-	<div class="main main-content-wrapper d-flex clearfix" >
+	<div class="main main-content-wrapper d-flex clearfix" id="shopMainWrapper">
     
-        <div class="shop_sidebar_area d-none d-lg-block bg-white p-4 rounded-3xl shadow-sm border mt-4 ms-3 mb-4">
+        <div class="shop_sidebar_area bg-white p-4 rounded-3xl shadow-sm border mt-4 ms-3 mb-4" id="shopSidebar">
     		
     			<h4 class="mb-4" style="color:var(--shop-primary);"> <i class="fa fa-filter"></i> Filter par</h4>
             
@@ -190,14 +190,14 @@
         
         </div>
 
-        <div class="amado_product_area section-padding-40">
+        <div class="amado_product_area section-padding-40" id="shopProductArea">
 			<?php
 			$variable2='<li class="breadcrumb-item text-secondary" aria-current="page"><a href="'.lienCategorie().'" class="text-decoration-none text-secondary">Catalogue</a></li>';
 			$variable3 = ''; // Initialize to prevent undefined variable warning
 			$variable4 = ''; // Initialize to prevent undefined variable warning
 			
 			if(isset($_GET['promo'])){		
-			$variable3='<li class="breadcrumb-item active fw-bold text-primary" aria-current="page">En promotions</li>';
+			$variable3='<li class="breadcrumb-item active fw-bold text-primary" style="color:var(--shop-primary)!important" aria-current="page">En promotions</li>';
 			}
 			if(isset($_GET['linkp']) && $_GET['linkp'] != '' ){	
 			$linkp=  sanitize($_GET['linkp']); 	
@@ -205,7 +205,7 @@
 			}
 			if(isset($_GET['link']) && $_GET['link'] != '' ){	
 			$link=  sanitize($_GET['link']); 	
-			$variable4='<li class="breadcrumb-item active fw-bold text-primary" aria-current="page">'.titreCategories($link).'</li>';
+			$variable4='<li class="breadcrumb-item active fw-bold text-primary" style="color:var(--shop-primary)!important" aria-current="page">'.titreCategories($link).'</li>';
 			}
 			
 			?>
@@ -228,93 +228,7 @@
 				</div>
 			</div>
 
-            <!-- MOBILE FILTERS -->
-            <div class="d-block d-lg-none container-fluid mb-4">
-                <button class="btn w-100 d-flex justify-content-between align-items-center fw-bold px-4 py-3 shadow-sm border" id="mobileFiltersToggle" type="button"
-                    style="background:#fff; border-color: var(--shop-primary,#5A31F4); border-radius: 0.75rem; color: var(--shop-primary,#5A31F4);">
-                    <span><i class="fa fa-filter me-2"></i> Filtres</span>
-                    <i class="fa fa-chevron-down" id="mobileFiltersChevron"></i>
-                </button>
-                <div id="mobileFilters" style="display:none;">
-                    <div class="bg-white p-4 shadow-sm border mt-2" style="border-radius: 0.75rem; border-color: var(--shop-border, #E0DEFF)!important;">
-                        
-                        <!-- Categories Dropdown -->
-                        <div class="form-group mb-3">
-                            <label class="fw-semibold small" style="color:var(--shop-text-secondary,#6B6589)">Catégories</label>
-                            <select class="form-control common_selector category" style="height:auto; padding: 0.6rem 1rem; font-size: 0.9rem; border-color: var(--shop-border,#E0DEFF); border-radius: 0.5rem;">
-                                <option value="">Toutes les catégories</option>
-                                <?php
-                                if(isset($_GET['link']) && $_GET['link'] != '' ){
-                                    $link=  sanitize($_GET['link']);
-                        	        $reqM = 'SELECT DISTINCT id,titre,link,type FROM `categories_blog` WHERE `etat` = "1" AND  `link` = "'.$link.'" '.$type_cond_categ.' ORDER BY `ordre` ASC';
-                                }else{
-                                    $reqM = 'SELECT DISTINCT id,titre,link,type FROM `categories_blog` WHERE `etat` = "1" '.$type_cond_categ.' ORDER BY `ordre` ASC';
-                                }
-                                $resM = executeRequete($reqM);
-                                while ($dataM = mysqli_fetch_array($resM)) { 
-                                    $sel = (isset($_GET['link']) && lienCategorieEquipements($dataM['link']) == lienCategorieEquipements($_GET['link'])) ? 'selected' : '';
-                                    echo '<option value="'.afficheChamp($dataM['id']).'" '.$sel.'>'.afficheChamp1($dataM['titre']).'</option>';
-                                }
-                                ?>
-                            </select>
-                        </div>
 
-                        <!-- Marques Dropdown -->
-                        <div class="form-group mb-3">
-                            <label class="fw-semibold small" style="color:var(--shop-text-secondary,#6B6589)">Marques</label>
-                            <select class="form-control common_selector brand" style="height:auto; padding: 0.6rem 1rem; font-size: 0.9rem; border-color: var(--shop-border,#E0DEFF); border-radius: 0.5rem;">
-                                <option value="">Toutes les marques</option>
-                                <?php
-    			if(isset($_GET['link']) && $_GET['link'] != '' ){
-    				$idCategProd = idCategBlog($_GET['link']);
-                    	    $reqM2 = "SELECT id,raison FROM `marques` WHERE id IN (SELECT marque FROM `produits` WHERE `categorie` = '".$idCategProd."' OR `idparent_categ` = '".$idCategProd."') AND `etat`= '1' ORDER BY `ordre` ASC";
-    			}else{ 
-    				$reqM2 = "SELECT DISTINCT id,raison FROM `marques` WHERE `etat`= '1' ORDER BY `ordre` ASC";
-    			}
-                                $resM2 = executeRequete($reqM2);
-                                while ($dataM2 = mysqli_fetch_array($resM2)) { 
-                                    echo '<option value="'.afficheChamp($dataM2['id']).'">'.afficheChamp($dataM2['raison']).'</option>';
-                                }
-                                ?>
-                            </select>
-                        </div>
-
-                        <!-- Characteristics Dropdowns -->
-                        <?php
-    					if(isset($_GET['link']) && $_GET['link'] != '' ){
-    					 $idCategProd = idCategBlog($_GET['link']);
-                        	 $reqM3 = "SELECT * FROM `caracteristique_prod` WHERE valeur != '0' AND  `idproduit` IN (SELECT id FROM `produits` WHERE `categorie` = '".$idCategProd."' OR `idparent_categ` = '".$idCategProd."') GROUP BY idcarac ORDER BY `id` ASC";
-    					}else{
-                        	 $reqM3 = "SELECT * FROM `caracteristique_prod` WHERE valeur != '0' GROUP BY idcarac ORDER BY `id` ASC";
-    					}
-                    	 $resM3 = executeRequete($reqM3);
-                	 while ($dataM3 = mysqli_fetch_array($resM3)) { 
-                	       // INNER JOIN pour exclure les IDs orphelins
-                	       $reqM4 = 'SELECT cp.*, vc.valeur as val_label, vc.ordre as val_ordre FROM `caracteristique_prod` cp
-                	                INNER JOIN `valeur_caracteristique` vc ON vc.id = cp.valeur
-                	                WHERE cp.valeur != "0" AND cp.`idcarac` = "'.$dataM3['idcarac'].'"  
-                	                GROUP BY cp.valeur ORDER BY vc.`ordre` ASC, vc.`id` ASC';
-                	   $resM4 = executeRequete($reqM4);
-                	       if(mysqli_num_rows($resM4) > 0){
-                        ?>
-                        <div class="form-group mb-3">
-                            <label class="fw-semibold small" style="color:var(--shop-text-secondary,#6B6589)"><?php echo titreCaracteristiques($dataM3['idcarac']); ?></label>
-                            <select class="form-control common_selector caracteristique" style="height:auto; padding: 0.6rem 1rem; font-size: 0.9rem; border-color: var(--shop-border,#E0DEFF); border-radius: 0.5rem;">
-                                <option value="">Tous</option>
-                                <?php while ($dataM4 = mysqli_fetch_array($resM4)) {
-                                    $valLibM = valeurCaracteristiques($dataM4['valeur']);
-                                    if ($valLibM === '' || $valLibM === null) continue;
-                                ?>
-                                <option value="<?php echo htmlspecialchars($valLibM); ?>"><?php echo htmlspecialchars($valLibM); ?></option>
-                                <?php } ?>
-                            </select>
-                        </div>
-                        <?php } } ?>
-
-                    </div>
-                </div>
-            </div>
-            <!-- END MOBILE FILTERS -->
 
 			<?php
 			if(isset($_GET['promo'])){?>
@@ -330,11 +244,11 @@
 			?>
 			
 			
-			<div class="container-fluid mb-5 d-none d-md-block">
+			<div class="container-fluid mb-5 d-none d-md-block text-center">
 			    <div class="mb-3" style="border-bottom: 2px solid var(--shop-primary); display: inline-block; padding-bottom: 4px;">
 			        <h3 style="font-size:1rem; font-weight:700; color:var(--shop-text-primary); margin:0;">Sélectionnez votre marque préférée :</h3>
 			    </div>
-			    <div class="d-flex flex-wrap" style="gap: 10px;">
+			    <div class="d-flex flex-wrap justify-content-center" style="gap: 10px;">
     		        <?php 
 				            $categ     =  sanitize($_GET['link']);
 				            $idc       = idCategBlog($categ);
@@ -457,19 +371,4 @@
     
 	</div>
 
-<script>
-/* Mobile filters toggle — manual (avoids Bootstrap collapse double-fire) */
-(function(){
-    var btn = document.getElementById('mobileFiltersToggle');
-    var panel = document.getElementById('mobileFilters');
-    var chevron = document.getElementById('mobileFiltersChevron');
-    if(!btn || !panel) return;
-    btn.addEventListener('click', function(e){
-        e.preventDefault();
-        e.stopPropagation();
-        var isOpen = panel.style.display !== 'none';
-        panel.style.display = isOpen ? 'none' : 'block';
-        chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-    });
-})();
-</script>
+

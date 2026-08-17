@@ -10,7 +10,19 @@
 		window.location = 'index.php?r=moyens_paiement';
 	-->
 	</script> 
-   <?php } ?>
+   <?php } 
+   
+   if (isset($_GET['action']) && $_GET['action'] == 'toggle' ) {
+       $id_toggle = intval($_GET['id']);
+       $r_toggle = executeRequete("SELECT etat FROM moyens_paiement WHERE id='$id_toggle'");
+       if ($row_toggle = mysqli_fetch_assoc($r_toggle)) {
+           $new_etat = $row_toggle['etat'] == '1' ? '0' : '1';
+           executeRequete("UPDATE moyens_paiement SET etat='$new_etat' WHERE id='$id_toggle'");
+       }
+       echo '<script>window.location = "index.php?r=moyens_paiement";</script>';
+       exit;
+   }
+   ?>
                 <div class="row">
 				<div class="col-12">
                         <div class="admin-card">
@@ -50,8 +62,13 @@
 											<tr>
                                                 <td><?php echo moyen_paiement($data['id']); ?></td>
                                                 <td class="text-nowrap">
-                                                    <a href="index.php?r=mmoyenpaiement&id=<?php echo afficheChamp($data['id']); ?>" data-toggle="tooltip" data-original-title="Modifier"> <i class="fa fa-pencil text-inverse m-r-10"></i> </a>
+                                                    <?php if($data['etat'] == '1'): ?>
+                                                        <a href="index.php?r=moyens_paiement&id=<?php echo afficheChamp($data['id']); ?>&action=toggle" style="color:#2ec4b6;font-weight:600;font-size:.8125rem;border:1px solid #2ec4b6;padding:2px 6px;border-radius:4px;text-decoration:none;margin-right:8px;" data-toggle="tooltip" data-original-title="Désactiver">Actif</a>
+                                                    <?php else: ?>
+                                                        <a href="index.php?r=moyens_paiement&id=<?php echo afficheChamp($data['id']); ?>&action=toggle" style="color:#ef5350;font-weight:600;font-size:.8125rem;border:1px solid #ef5350;padding:2px 6px;border-radius:4px;text-decoration:none;margin-right:8px;" data-toggle="tooltip" data-original-title="Activer">Inactif</a>
+                                                    <?php endif; ?>
                                                     
+                                                    <a href="index.php?r=mmoyenpaiement&id=<?php echo afficheChamp($data['id']); ?>" data-toggle="tooltip" data-original-title="Modifier"> <i class="fa fa-pencil text-inverse m-r-10"></i> </a>
                                                     <a href="javascript:void(0);" onclick="confirmGlobalDelete('<?php echo 'index.php?r=moyens_paiement&id='.$id.'&amp;action=supp';?>')" data-toggle="tooltip" data-original-title="Supprimer"> <i class="fa fa-close text-danger"></i></a> 
                                                 </td>
                                             </tr>

@@ -98,11 +98,93 @@
     .shop_sidebar_area { overflow-x: hidden; }
     /* Prevent product area from shrinking when few products are loaded */
     .amado_product_area { flex: 1; min-width: 0; }
+    
+    /* Sidebar Collapsible Styles */
+    #shopMainWrapper { position: relative; display: flex; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); overflow: hidden; align-items: flex-start; }
+    #shopSidebar { width: 320px; flex-shrink: 0; margin-left: -330px; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); opacity: 0; position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
+    .sidebar-is-open #shopSidebar { margin-left: 0; opacity: 1; }
+    #shopProductArea { flex-grow: 1; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); min-width: 0; width: 100%; }
+
+    /* Filter Toggle Button */
+    .filter-toggle-btn {
+        position: fixed;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--shop-primary, #5a31f4);
+        color: white;
+        border: none;
+        border-radius: 0 8px 8px 0;
+        padding: 12px 16px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        z-index: 1050;
+        box-shadow: 4px 0 15px rgba(90,49,244,0.4);
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .filter-toggle-btn:hover { background: #4a21e4; padding-left: 20px; }
+    .filter-toggle-btn i.fa-filter { animation: pulse-icon 2s infinite; }
+    @keyframes pulse-icon {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+    .sidebar-is-open .filter-toggle-btn {
+        left: 320px;
+        border-radius: 8px 0 0 8px;
+        box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+    }
+    
+    /* Product Grid layout */
+    .product-grid-container {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr); /* Mobile: 2 per row */
+    }
+    @media (min-width: 640px) {
+        .product-grid-container { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 1024px) {
+        /* Default closed sidebar = 5 per row */
+        .product-grid-container { grid-template-columns: repeat(5, 1fr); }
+        /* Open sidebar = 4 per row */
+        .sidebar-is-open .product-grid-container { grid-template-columns: repeat(4, 1fr); }
+    }
+    .product-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+
+    
+    /* Pagination dynamique */
+    .pagination .page-item.active .page-link {
+        background-color: var(--shop-primary, #5a31f4) !important;
+        border-color: var(--shop-primary, #5a31f4) !important;
+        color: white !important;
+    }
+    .pagination .page-link {
+        color: var(--shop-text-primary, #111827);
+        transition: all 0.2s ease;
+    }
+    .pagination .page-link:hover {
+        background-color: var(--shop-primary, #5a31f4) !important;
+        border-color: var(--shop-primary, #5a31f4) !important;
+        color: white !important;
+    }
   </style>
 </head>
 <body>
   <?php include('includes/feedback.php'); ?>
   <?php include('includes/header-tw.php'); ?>
+
+    <button id="sidebarToggleBtn" class="filter-toggle-btn" title="Filtrer les produits">
+        <i class="fa fa-filter"></i>
+    </button>
 
     <?php 
        include("includes/categorie.php");
@@ -164,7 +246,8 @@
 			var link = linkEl ? linkEl.value : '';
 			var category = get_filter('category');
 			var caracteristique = get_filter('caracteristique');
-			var sort = $('#sort_order').length ? $('#sort_order').val() : 'price_asc';
+			var sort = $('#sort_order').length ? $('#sort_order').val() : ($('.filter_data #sort_order').length ? $('.filter_data #sort_order').val() : 'price_asc');
+			var stock_only = $('#stock_only_filter').is(':checked') || $('.filter_data #stock_only_filter').is(':checked') ? '1' : '';
 
 			$('.filter_data').html('<div style="min-height:200px;display:flex;align-items:center;justify-content:center;"><i class="fa fa-spinner fa-spin fa-2x" style="color:var(--shop-primary,#5A31F4);"></i></div>');
 
@@ -182,6 +265,7 @@
                     link:link,
                     promo:promo,
                     sort:sort,
+                    stock_only:stock_only,
                     page:currentPage
                 },
 				success:function(data){
@@ -193,6 +277,7 @@
 
         /* Exposed globally so pagination buttons in AJAX response can call this */
         window.filter_data_page = function(page){ filter_data(page); };
+        window.filter_data = function(){ filter_data(1); };
 
 		function get_filter(class_name)
 		{
@@ -236,6 +321,22 @@
 
     });
     
+    // JS pour basculer la sidebar
+    $(document).ready(function() {
+        $('#sidebarToggleBtn').on('click', function() {
+            var wrapper = $('#shopMainWrapper');
+            wrapper.toggleClass('sidebar-is-open');
+            // Change icon
+            var icon = $(this).find('i');
+            if (wrapper.hasClass('sidebar-is-open')) {
+                icon.removeClass('fa-filter').addClass('fa-times');
+                icon.css('animation', 'none');
+            } else {
+                icon.removeClass('fa-times').addClass('fa-filter');
+                icon.css('animation', 'pulse-icon 2s infinite');
+            }
+        });
+    });
     </script>
 	
 </body>
