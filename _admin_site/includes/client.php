@@ -11,6 +11,20 @@
 	-->
 	</script>
 	<?php } ?>
+ <?php	if (isset($_GET['action']) && $_GET['action'] == 'toggle_status' ) {
+        $id = (int)$_GET['id'];
+        $req = executeRequete("SELECT `etat` FROM `clients` WHERE `id` = '$id'");
+        if ($data = mysqli_fetch_array($req)) {
+            $new_etat = $data['etat'] == 1 ? 0 : 1;
+            executeRequete("UPDATE `clients` SET `etat` = '$new_etat' WHERE `id` = '$id'");
+        }
+		  ?>
+	<script language="javascript">
+	<!--
+		window.location = 'index.php?r=clients';
+	-->
+	</script>
+	<?php } ?>
                 <div class="row">
                     <div class="col-12">
                         <div class="admin-card">
@@ -39,6 +53,7 @@
                                                  <th>Coordonnées</th>
                                                  <th>Inscription</th>
                                                  <th>Dernière Commande</th>
+                                                 <th>Statut</th>
                                                  <th class="text-nowrap">Actions</th>
                                              </tr>
                                          </thead>
@@ -100,6 +115,13 @@
                                                  </td>
                                                  <td><span class="status-badge status-badge-info"><?php echo timestampTDtodate($data['date_creation']); ?></span></td>
                                                  <td class="text-nowrap"><?php echo $data['last_cmd'] ? '<span class="status-badge status-badge-success">#' . afficheChamp($data['last_cmd']) . '</span>' : '<span class="opacity-40 italic text-sm">Aucune</span>'; ?></td>
+                                                 <td>
+                                                     <?php if($data['etat'] == 1) { ?>
+                                                         <a href="index.php?r=clients&id=<?php echo afficheChamp($data['id']); ?>&action=toggle_status" class="status-badge status-badge-success" style="cursor: pointer; text-decoration: none;" data-tippy-content="Cliquer pour désactiver">Actif</a>
+                                                     <?php } else { ?>
+                                                         <a href="index.php?r=clients&id=<?php echo afficheChamp($data['id']); ?>&action=toggle_status" class="status-badge status-badge-warning" style="cursor: pointer; text-decoration: none;" data-tippy-content="Cliquer pour activer">Inactif</a>
+                                                     <?php } ?>
+                                                 </td>
                                                  <td class="text-nowrap">
                                                      <div class="action-buttons">
                                                         <a href="index.php?r=mclient&id=<?php echo afficheChamp($data['id']); ?>" class="action-btn edit-btn" data-tippy-content="Modifier">

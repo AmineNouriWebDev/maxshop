@@ -93,3 +93,30 @@ $nbArticles = (isset($_SESSION['panier']['idcart']) && is_array($_SESSION['panie
     #floating-cart { bottom: 1rem; left: 1rem; }
   }
 </style>
+
+<?php if (isset($_SESSION['toast_message'])): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Toastify !== 'undefined') {
+        Toastify({
+          text: <?php echo json_encode($_SESSION['toast_message']['text']); ?>,
+          duration: 6000,
+          close: true,
+          gravity: "bottom",
+          position: "right",
+          className: "toast-tw",
+          style: {
+            background: <?php echo json_encode($_SESSION['toast_message']['color'] == 'success' ? 'var(--shop-primary, #5A31F4)' : '#ef4444'); ?>,
+            color: "#fff",
+            borderRadius: "0.75rem",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+            fontFamily: "Inter, sans-serif",
+            fontSize: "0.875rem",
+            fontWeight: "500",
+            padding: "1rem 1.25rem"
+          }
+        }).showToast();
+    }
+});
+</script>
+<?php unset($_SESSION['toast_message']); endif; ?>

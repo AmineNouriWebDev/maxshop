@@ -102,17 +102,18 @@
 			  $date_creation=time();
 
 			  $confirm_key=random(40);
+              
+              // Si la vérification est active, l'état est 0 (inactif), sinon 1 (actif)
+              $etat = (isset($verification_inscription_active) && $verification_inscription_active == 1) ? 0 : 1;
 
-			  $req="INSERT INTO `clients`(`nom`,`prenom`,`email`,`tel`,`whatsapp`,`password`,`date_creation`,`etat`) VALUES('".$nom."','".$prenom."','".$email."','".$tel."','".$whatsapp."','".$password."','".$date_creation."','1')";
-
-      //echo $req; exit;
+			  $req="INSERT INTO `clients`(`nom`,`prenom`,`email`,`tel`,`whatsapp`,`password`,`date_creation`,`etat`, `confirm_key`) VALUES('".$nom."','".$prenom."','".$email."','".$tel."','".$whatsapp."','".$password."','".$date_creation."','".$etat."', '".$confirm_key."')";
 
 			  executeRequete($req);
 			  global $connexion;
 			  $new_id = mysqli_insert_id($connexion);
 
 			  // envoi email
-            $email_contacts = explode(';',$email_contact);
+              $email_contacts = explode(';',$email_contact);
             
 			  $clientmail=$prenom." ".$nom;
 			  $sujetmail=sujetEmail(4);
@@ -126,34 +127,42 @@
                   'customer_phone' => $tel,
                   'customer_whatsapp' => $whatsapp,
                   'email_subject' => $sujetmail,
-                  'email_html' => $messagemail
+                  'email_html' => $messagemail,
+                  'verification_required' => ($etat == 0)
               );
+              
+              if ($etat == 0) {
+                  $verification_url = $chemin_absolu . 'verifier_email.php?key=' . $confirm_key;
+                  $n8n_payload['verification_url'] = $verification_url;
+              }
               
               // Envoi silencieux au webhook n8n sans bloquer l'inscription
               envoiEmail_n8n($n8n_payload);
 
 
-
-              $sess_id = md5(microtime());
-              
-              // Update sess_id in DB
-              $strSQL1 = "UPDATE `clients` SET sess_id='".$sess_id."' WHERE id='".$new_id."'";
-              executeRequete($strSQL1);
-
-              // Set SESSION variables (Auto-login)
-              $_SESSION['client_id'] = $new_id; 
-              $_SESSION['client_login'] = $email;
-              $_SESSION['client_nom'] = $nom;
-              $_SESSION['sess_id'] = $sess_id;
-              
-              // Redirect
-              ?>
-                <script language="javascript">
-                  window.location = '<?php echo lienCompte();?>';
-                </script>
-              <?php
-              exit;
-
+              if ($etat == 1) {
+                  $sess_id = md5(microtime());
+                  
+                  // Update sess_id in DB
+                  $strSQL1 = "UPDATE `clients` SET sess_id='".$sess_id."' WHERE id='".$new_id."'";
+                  executeRequete($strSQL1);
+    
+                  // Set SESSION variables (Auto-login)
+                  $_SESSION['client_id'] = $new_id; 
+                  $_SESSION['client_login'] = $email;
+                  $_SESSION['client_nom'] = $nom;
+                  $_SESSION['sess_id'] = $sess_id;
+                  
+                  // Redirect
+                  ?>
+                    <script language="javascript">
+                      window.location = '<?php echo lienCompte();?>';
+                    </script>
+                  <?php
+                  exit;
+              } else {
+                  $success_msg = "Votre compte a été créé avec succès. Veuillez cliquer sur le lien de vérification envoyé à votre adresse e-mail pour activer votre compte.";
+              }
 
 			}
 
@@ -310,6 +319,25 @@
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--shop-primary) 15%, transparent);
     }
     
+    .pw-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .pw-toggle {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-80%);
+      background: none;
+      border: none;
+      color: var(--shop-text-secondary);
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+    }
+    .pw-toggle:hover { color: var(--shop-primary); }
+    
     /* Grid layout for inputs */
     .cx-input-row {
       display: grid;
@@ -375,7 +403,31 @@
         <?php endif; ?>
 
         <?php if (isset($success_msg) && $success_msg): ?>
-          <div class="cx-success"><?php echo $success_msg; ?> <br><a href="<?php echo lienConnexion(); ?>" style="color: inherit; font-weight: bold;">Cliquez ici pour vous connecter.</a></div>
+          <div class="cx-success" style="padding:15px; background:rgba(16,185,129,0.1); color:#10b981; border-radius:10px; margin-bottom:15px; border:1px solid rgba(16,185,129,0.3);">
+            <?php echo $success_msg; ?> <br><a href="<?php echo lienConnexion(); ?>" style="color: inherit; font-weight: bold; text-decoration: underline;">Cliquez ici pour vous connecter.</a>
+          </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Toastify({
+                  text: "✉️ Veuillez vérifier votre boîte mail (et vos spams) pour activer votre compte !",
+                  duration: 8000,
+                  close: true,
+                  gravity: "bottom",
+                  position: "right",
+                  className: "toast-tw",
+                  style: {
+                    background: "var(--shop-primary, #5A31F4)",
+                    color: "#fff",
+                    borderRadius: "0.75rem",
+                    boxShadow: "0 10px 30px rgba(90,49,244,0.3)",
+                    fontFamily: "Inter, sans-serif",
+                    fontSize: "0.875rem",
+                    fontWeight: "500",
+                    padding: "1rem 1.25rem"
+                  }
+                }).showToast();
+            });
+          </script>
         <?php endif; ?>
 
         <form action="<?php echo lienInscription(); ?>" method="post">
@@ -414,10 +466,20 @@
           </div>
 
           <label class="cx-label" for="cx-pass">Mot de passe</label>
-          <input class="cx-input" type="password" name="password" id="cx-pass" placeholder="••••••••" required>
+          <div class="pw-wrap">
+              <input class="cx-input" type="password" name="password" id="cx-pass" placeholder="••••••••" required style="padding-right: 2.5rem;">
+              <button type="button" class="pw-toggle" onclick="togglePassword('cx-pass', this)" aria-label="Afficher le mot de passe">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+          </div>
 
           <label class="cx-label" for="cx-confirm">Confirmer mot de passe</label>
-          <input class="cx-input" type="password" name="confirm_password" id="cx-confirm" placeholder="••••••••" required>
+          <div class="pw-wrap">
+              <input class="cx-input" type="password" name="confirm_password" id="cx-confirm" placeholder="••••••••" required style="padding-right: 2.5rem;">
+              <button type="button" class="pw-toggle" onclick="togglePassword('cx-confirm', this)" aria-label="Afficher le mot de passe">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+          </div>
 
           <?php if (!empty($cloudflare_site_key)): ?>
             <div class="cf-turnstile mb-3" data-sitekey="<?php echo $cloudflare_site_key; ?>"></div>
@@ -437,5 +499,21 @@
 
   <?php include('includes/footer-tw.php'); ?>
   <?php include('includes/script-footer.php'); ?>
+  
+  <script>
+    function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const iconEye = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+        const iconEyeOff = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye-off"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.innerHTML = iconEyeOff;
+        } else {
+            input.type = 'password';
+            btn.innerHTML = iconEye;
+        }
+    }
+  </script>
 </body>
 </html>

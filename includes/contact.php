@@ -32,13 +32,14 @@
                         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
                         
                         $result = curl_exec($curl);
+                        $curl_err = curl_error($curl);
                         curl_close($curl);
                         
                         $response_keys = json_decode($result, true);
                         
                         // Si le json_decode a échoué ou que "success" n'est pas "true"
                         if(empty($response_keys) || empty($response_keys['success'])) {
-                            echo '<div class="alert alert-danger rounded-xl mb-4">La vérification anti-spam a échoué. Veuillez réessayer.</div>';
+                            echo '<div class="alert alert-danger rounded-xl mb-4">La vérification anti-spam a échoué. Détail de l\'erreur : ' . htmlspecialchars($result) . ' | cURL Error: ' . htmlspecialchars($curl_err) . '</div>';
                         } else {
                             $nom=sanitize($_POST['name']);
                             $email=sanitize($_POST['email']);

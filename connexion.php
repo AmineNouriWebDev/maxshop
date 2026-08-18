@@ -203,6 +203,24 @@ if (isset($_POST['action']) && $_POST['action'] == "login") {
       border-color: var(--shop-primary);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--shop-primary) 15%, transparent);
     }
+    .pw-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .pw-toggle {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-80%);
+      background: none;
+      border: none;
+      color: var(--shop-text-secondary);
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+    }
+    .pw-toggle:hover { color: var(--shop-primary); }
     .cx-btn {
       width: 100%;
       height: 46px;
@@ -298,7 +316,12 @@ if (isset($_POST['action']) && $_POST['action'] == "login") {
           <input class="cx-input" type="email" name="login" id="cx-email" placeholder="vous@email.com" required autocomplete="email">
 
           <label class="cx-label" for="cx-pass">Mot de passe</label>
-          <input class="cx-input" type="password" name="password" id="cx-pass" placeholder="••••••••" required autocomplete="current-password">
+          <div class="pw-wrap">
+              <input class="cx-input" type="password" name="password" id="cx-pass" placeholder="••••••••" required autocomplete="current-password" style="padding-right: 2.5rem;">
+              <button type="button" class="pw-toggle" onclick="togglePassword('cx-pass', this)" aria-label="Afficher le mot de passe">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+          </div>
 
           <?php if (!empty($cloudflare_site_key)): ?>
             <div class="cf-turnstile mb-3" data-sitekey="<?php echo $cloudflare_site_key; ?>"></div>
@@ -392,5 +415,21 @@ if (isset($_POST['action']) && $_POST['action'] == "login") {
 
   <?php include('includes/footer-tw.php'); ?>
   <?php include('includes/script-footer.php'); ?>
+  
+  <script>
+    function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const iconEye = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+        const iconEyeOff = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye-off"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.innerHTML = iconEyeOff;
+        } else {
+            input.type = 'password';
+            btn.innerHTML = iconEye;
+        }
+    }
+  </script>
 </body>
 </html>

@@ -129,9 +129,6 @@ if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'offipro.net') {
 if ($is_local) {
     $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost:8080';
     $chemin_absolu = "http://" . $host . "/";
-    // Désactiver Cloudflare Turnstile en local pour éviter les erreurs de domaine
-    $cloudflare_site_key = "";
-    $cloudflare_secret_key = "";
 } else {
     // PRODUCTION : on utilise la valeur déjà récupérée depuis site_configuration
     if (empty($chemin_absolu)) {

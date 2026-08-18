@@ -42,8 +42,8 @@ function envoiEmail_n8n($payload) {
     // Fallback de sécurité : Si le champ admin est vide, s'appuyer sur l'URL en dur initialisée
     $webhook_url = !empty($n8n_webhook_mailing) ? $n8n_webhook_mailing : 'https://n8n.deposark.com/webhook/facb505f-b203-4a83-bd01-d7f988c83562';
     
-    // Vérifier si le webhook est configuré et que nous ne sommes pas en local
-    if ($_SERVER['SERVER_NAME'] != 'localhost' && !empty($webhook_url)) {
+    // Vérifier si le webhook est configuré
+    if (!empty($webhook_url)) {
         $ch = curl_init($webhook_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -66,7 +66,7 @@ function envoiNotification_n8n($payload) {
     // Le webhook pour les notifications Telegram
     $webhook_url = !empty($n8n_webhook_url) ? $n8n_webhook_url : '';
     
-    if ($_SERVER['SERVER_NAME'] != 'localhost' && !empty($webhook_url)) {
+    if (!empty($webhook_url)) {
         $ch = curl_init($webhook_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);

@@ -44,7 +44,7 @@ if(isset($_POST['action']) && $_POST['action']=="forget" ){
         $update_req = "UPDATE `clients` SET `confirm_key`='". $reset_token ."' WHERE `id`='".$data1['id']."'";
         executeRequete($update_req);
         
-        $reset_link = "https://offipro.net/reset-password.php?email=" . urlencode($login) . "&token=" . $reset_token;
+        $reset_link = $chemin_absolu . "reset-password.php?email=" . urlencode($login) . "&token=" . $reset_token;
         $link_html = '<a href="'.$reset_link.'" style="display:inline-block; padding:10px 20px; background:#5A31F4; color:#fff; text-decoration:none; border-radius:5px;">Réinitialiser mon mot de passe</a>';
     
         $clientmail=$data1['prenom']." ".$data1['nom'];
@@ -63,16 +63,12 @@ if(isset($_POST['action']) && $_POST['action']=="forget" ){
         
         envoiEmail_n8n($n8n_payload);
         
-        $msg = "Un lien de réinitialisation a été envoyé à votre adresse e-mail.";
-      ?>
-  <script language="javascript">
-  <!--
-    alert('<?php echo addslashes($msg);?>');
-    window.location = '<?php echo lienAccueil();?>';
-  -->
-  </script>
-  <?php
-      
+        $_SESSION['toast_message'] = [
+            'text' => '✅ Un lien de réinitialisation a été envoyé à votre adresse e-mail.',
+            'color' => 'success'
+        ];
+        header('Location: ' . lienAccueil());
+        exit;
       }else{ // compte n'existe pas 
       
       $erreur ="Il n'existe aucun compte avec cette adresse e-mail!";

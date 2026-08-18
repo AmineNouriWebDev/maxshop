@@ -61,8 +61,10 @@ if (isset($_POST['action']) && $_POST['action'] == 'mod' )
     $google_login_enabled    = isset($_POST['google_login_enabled']) ? (int)$_POST['google_login_enabled'] : 0;
     $facebook_login_enabled  = isset($_POST['facebook_login_enabled']) ? (int)$_POST['facebook_login_enabled'] : 0;
     $cloudflare_site_key    = formReception($_POST['cloudflare_site_key'] ?? '');
+    $cloudflare_secret_key  = formReception($_POST['cloudflare_secret_key'] ?? '');
     $confiva_api_key        = formReception($_POST['confiva_api_key'] ?? '');
     $configurateur_actif    = isset($_POST['configurateur_actif']) ? (int)$_POST['configurateur_actif'] : 1;
+    $verification_inscription_active = isset($_POST['verification_inscription_active']) ? (int)$_POST['verification_inscription_active'] : 0;
     
 	$cmd_num_sms 		= formReception($_POST['cmd_num_sms']);
 	$cmd_num_whatsapp 	= formReception($_POST['cmd_num_whatsapp']);
@@ -111,7 +113,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'mod' )
 	`telegram_bot_token` = "'. $telegram_bot_token .'", `telegram_chat_id` = "'. $telegram_chat_id .'", `n8n_webhook_url` = "'. $n8n_webhook_url .'", `n8n_webhook_mailing` = "'. $n8n_webhook_mailing .'",
 	`matricule_fiscale` = "'.$matricule_fiscale.'", `rne` = "'.$rne.'", `registre_commerce` = "'.$registre_commerce.'", `banque` = "'.$banque.'",
 	`rib` = "'.$rib.'", `swift` = "'.$swift.'", `code_douane` = "'.$code_douane.'",
-	`google_search_console` = "'.$google_search_console.'", `facebook_pixel` = "'.$facebook_pixel.'", `theme_color` = "'.$theme_color.'", `developer_comment` = "'. mysqli_real_escape_string(ouvrirCnx(), $developer_comment) .'",
+	`google_search_console` = "'.$google_search_console.'", `facebook_pixel` = "'.$facebook_pixel.'", `theme_color` = "'.$theme_color.'", `developer_comment` = "'. mysqli_real_escape_string(ouvrirCnx(), $developer_comment) .'", `verification_inscription_active` = "'.$verification_inscription_active.'",
     `confiva_api_key` = "'. $confiva_api_key .'", `configurateur_actif` = "'. $configurateur_actif .'", `social_share_token` = "'.$social_share_token.'"';
 
 	$resultat = executeRequete($requete);
@@ -243,6 +245,25 @@ if (isset($_POST['action']) && $_POST['action'] == 'mod' )
                                                 <fieldset>
                                                     <label class="custom-control custom-radio">
                                                         <input type="radio" value="0" name="configurateur_actif" id="configurateur_off" class="custom-control-input"  <?php if(isset($configurateur_actif) && $configurateur_actif == 0)  echo "checked"; ?>> <span class="custom-control-indicator"></span> <span class="custom-control-description">Non (Masqué)</span> </label>
+                                                </fieldset>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label class="d-flex align-items-center" style="gap: 8px;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                                    Vérification des nouveaux inscrits
+                                                </label>
+                                                <p class="text-xs text-muted mb-2">
+                                                    Si <strong>Oui</strong>, les nouveaux inscrits recevront un e-mail avec un lien de validation avant de pouvoir se connecter.
+                                                </p>
+                                                <fieldset class="controls">
+                                                    <label class="custom-control custom-radio">
+                                                        <input type="radio" value="1" name="verification_inscription_active" class="custom-control-input" <?php if(isset($verification_inscription_active) && $verification_inscription_active == 1) echo "checked"; ?>> <span class="custom-control-indicator"></span> <span class="custom-control-description">Oui (Actif)</span> </label>
+                                                </fieldset>
+                                                <fieldset>
+                                                    <label class="custom-control custom-radio">
+                                                        <input type="radio" value="0" name="verification_inscription_active" class="custom-control-input" <?php if(!isset($verification_inscription_active) || $verification_inscription_active == 0) echo "checked"; ?>> <span class="custom-control-indicator"></span> <span class="custom-control-description">Non (Désactivé)</span> </label>
                                                 </fieldset>
                                             </div>
                                         </div>

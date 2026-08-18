@@ -45,13 +45,11 @@ if(isset($_POST['action']) && $_POST['action']=="reset" ){
           $update_req = "UPDATE `clients` SET `password`='".$password."', `mpc`='".$mpc."', `confirm_key`='' WHERE `id`='".$data1['id']."'";
           executeRequete($update_req);
           
-          $msg = "Votre mot de passe a été réinitialisé avec succès.";
-          ?>
-          <script language="javascript">
-            alert('<?php echo addslashes($msg);?>');
-            window.location = '<?php echo lienConnexion();?>';
-          </script>
-          <?php
+          $_SESSION['toast_message'] = [
+              'text' => '✅ Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.',
+              'color' => 'success'
+          ];
+          header('Location: ' . lienConnexion());
           exit;
       } else {
           $erreur = "Le lien de réinitialisation est invalide ou a expiré.";
@@ -217,6 +215,24 @@ $requete = "SELECT * FROM `site_menu` WHERE `id` = '15'";
       border-color: var(--shop-primary);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--shop-primary) 15%, transparent);
     }
+    .pw-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .pw-toggle {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-80%);
+      background: none;
+      border: none;
+      color: var(--shop-text-secondary);
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+    }
+    .pw-toggle:hover { color: var(--shop-primary); }
     .cx-btn {
       width: 100%;
       height: 46px;
@@ -248,10 +264,27 @@ $requete = "SELECT * FROM `site_menu` WHERE `id` = '15'";
   <?php include('includes/feedback.php'); ?>
   <?php include('includes/header-tw.php'); ?>
 
+  <main class="cx-wrap">
     <?php include('includes/reset-password.php'); ?>
   </main>
 
   <?php include('includes/footer-tw.php'); ?>
   <?php include('includes/script-footer.php'); ?>
+  
+  <script>
+    function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const iconEye = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+        const iconEyeOff = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye-off"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.innerHTML = iconEyeOff;
+        } else {
+            input.type = 'password';
+            btn.innerHTML = iconEye;
+        }
+    }
+  </script>
 </body>
 </html>
