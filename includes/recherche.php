@@ -1,7 +1,7 @@
 
-	<div class="main main-content-wrapper d-flex clearfix" >
+	<div class="main main-content-wrapper d-flex clearfix" id="shopMainWrapper">
     
-        <div class="shop_sidebar_area d-none d-lg-block bg-white p-4 rounded-3xl shadow-sm border mt-4 ms-3 mb-4">
+        <div class="shop_sidebar_area bg-white p-4 rounded-3xl shadow-sm border mt-4 ms-3 mb-4" id="shopSidebar">
     		
     			<h4 class="mb-4" style="color:var(--shop-primary);"> <i class="fa fa-filter"></i> Filter par</h4>
             
@@ -16,7 +16,7 @@
                         <div class="slider-range">
                             <?php
                             if ((isset($_GET['categorie']) && $_GET['categorie'] != '')){ 
-                            $reqprice = 'SELECT MIN(prix_vente) as min, MAX(prix_vente) as max FROM `produits` WHERE categorie="'.idCategBlog($_GET['categorie']).'" || idparent_categ="'.idCategBlog($_GET['categorie']).'"';
+                            $reqprice = 'SELECT MIN(prix_vente) as min, MAX(prix_vente) as max FROM `produits` WHERE categorie IN (SELECT id FROM categories_blog WHERE idparent="'.idCategBlog($_GET['categorie']).'" || id="'.idCategBlog($_GET['categorie']).'")';
                             $resprice = executeRequete($reqprice);
                             $dataprice = mysqli_fetch_array($resprice);
                         	}else{
@@ -101,7 +101,7 @@
     					if(isset($_GET['link']) && $_GET['link'] != '' ){
     						$idCategProd = idCategBlog($_GET['link']);
     						//echo $idCategProd;
-                    	    $req1 = "SELECT id,raison FROM `marques` WHERE id IN (SELECT marque FROM `produits` WHERE `categorie` = '".$idCategProd."' OR `idparent_categ` = '".$idCategProd."') AND `etat`= '1' ORDER BY `ordre` ASC";
+                    	    $req1 = "SELECT id,raison FROM `marques` WHERE id IN (SELECT marque FROM `produits` WHERE `categorie` IN (SELECT id FROM categories_blog WHERE idparent = '".$idCategProd."' || id = '".$idCategProd."')) AND `etat`= '1' ORDER BY `ordre` ASC";
                     	    $res1 = executeRequete($req1);
                     	    
                     	}elseif(isset($_GET['marque']) && $_GET['marque'] != '' ){
@@ -135,7 +135,7 @@
     					
     					if(isset($_GET['link']) && $_GET['link'] != '' ){
     						 $idCategProd = idCategBlog($_GET['link']);
-                        	 $req3 = "SELECT * FROM `caracteristique_prod` WHERE valeur != '0' AND  `idproduit` IN (SELECT id FROM `produits` WHERE `categorie` = '".$idCategProd."' OR `idparent_categ` = '".$idCategProd."') GROUP BY idcarac ORDER BY `id` ASC";
+                        	 $req3 = "SELECT * FROM `caracteristique_prod` WHERE valeur != '0' AND  `idproduit` IN (SELECT id FROM `produits` WHERE `categorie` IN (SELECT id FROM categories_blog WHERE idparent = '".$idCategProd."' || id = '".$idCategProd."')) GROUP BY idcarac ORDER BY `id` ASC";
                         	 //echo $req3; 
                         	 $res3 = executeRequete($req3);
     					}else{
@@ -185,7 +185,7 @@
         
         </div>
 
-        <div class="amado_product_area section-padding-40">
+        <div class="amado_product_area section-padding-40" id="shopProductArea">
 			<?php
 			$variable2='<li class="breadcrumb-item text-secondary" aria-current="page"><a href="'.lienRecherche().'" class="text-decoration-none text-secondary">Recherche</a></li>';
 			$variable3 = '';

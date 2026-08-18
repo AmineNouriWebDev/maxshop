@@ -83,7 +83,9 @@ if (isset($_POST['action']) && $_POST['action'] == 'mod' )
                         </div>
                         <div class="admin-card-body">
                                 <?php 
-                                $is_topbar = (typeSectionBloc($_GET['id']) == '7' || typeSectionBloc($_GET['id']) == '8'); 
+                                $type_cur = typeSectionBloc($_GET['id']);
+                                $is_topbar = ($type_cur == '7' || $type_cur == '8'); 
+                                $is_banner = ($type_cur == '6'); // Bannière promo
                                 ?>
                                 <form method="POST" enctype="multipart/form-data" novalidate="novalidate">
                                     <div class="admin-form-group">
@@ -93,11 +95,11 @@ if (isset($_POST['action']) && $_POST['action'] == 'mod' )
                                         </div>
                                     </div>
                                     
-                                    <?php if($is_topbar) { ?>
+                                    <?php if($is_topbar || $is_banner) { ?>
                                         <input type="hidden" name="contenu" value="<?php echo htmlspecialchars(contenuBloc($_GET['id'])); ?>">
                                     <?php } else { ?>
                                     <div class="admin-form-group">
-                                        <label>Contenu</label>
+                                        <label>Contenu / Sous-titre <small style="color:var(--color-text-muted);">(Pour Trust / sections texte)</small></label>
                                         <div class="controls">
                                           <textarea id="editor1" name="contenu" class="admin-input" rows="5"><?php echo contenuBloc($_GET['id']); ?></textarea>
                                         </div>
@@ -245,11 +247,13 @@ if (isset($_POST['action']) && $_POST['action'] == 'mod' )
                                     <?php if($is_topbar) { ?>
                                         <input type="hidden" name="ancre" value="<?php echo htmlspecialchars(ancreBloc($_GET['id'])); ?>">
                                         <input type="hidden" name="lien" value="<?php echo htmlspecialchars(lienBloc($_GET['id'])); ?>">
+                                    <?php } elseif($is_banner) { ?>
+                                        <input type="hidden" name="ancre" value="<?php echo htmlspecialchars(ancreBloc($_GET['id'])); ?>">
                                     <?php } else { ?>
                                     <div class="row">
                                      <div class="col-md-6">
                                       <div class="admin-form-group">
-                                        <label>Ancre</label>
+                                        <label>Ancre <small style="color:var(--color-text-muted);font-weight:400;">(Identifiant HTML pour liens internes, ex: #promo)</small></label>
                                         <div class="controls">
                                             <input type="text" name="ancre" value="<?php echo ancreBloc($_GET['id']); ?>" class="admin-input"> 
                                         </div>
@@ -306,7 +310,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'mod' )
                                     </div>
                                     <?php } ?>
 
-                                    <?php if($is_topbar) { ?>
+                                    <?php if($is_topbar || $is_banner) { ?>
                                         <input type="hidden" name="ordre" value="<?php echo htmlspecialchars(ordreBloc($_GET['id'])); ?>">
                                     <?php } else { ?>
                                     <div class="row">
@@ -316,6 +320,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'mod' )
                                         <div class="controls">
                                             <input type="text" name="ordre" value="<?php echo ordreBloc($_GET['id']); ?>" class="admin-input"> 
                                         </div>
+                                        <small class="form-text text-muted">Glisser-déposer depuis la liste des blocs pour réorganiser.</small>
                                     </div>
                                      </div>
                                     </div>

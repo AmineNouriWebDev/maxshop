@@ -134,7 +134,7 @@
 
 <script>
 // -- Flash Sales Countdown Script --
-document.addEventListener('DOMContentLoaded', function() {
+(function() {
     function formatTime(totalSeconds) {
         if (totalSeconds <= 0) return "Expiré";
         
@@ -173,9 +173,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    updateCountdowns();
-    setInterval(updateCountdowns, 1000);
-});
+    // Expose globally so AJAX callbacks can trigger a re-scan
+    window.updateFlashCountdowns = updateCountdowns;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCountdowns();
+        setInterval(updateCountdowns, 1000);
+    });
+})();
 </script>
  	 
  	 

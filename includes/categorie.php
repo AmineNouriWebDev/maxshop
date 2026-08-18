@@ -16,8 +16,8 @@
                     <div class="widget-desc">
                         <div class="slider-range">
                             <?php
-                            $categ_cond_inc = (isset($_GET['link']) && $_GET['link'] != '') ? ' (pv.categorie="'.idCategBlog($_GET['link']).'" || pv.idparent_categ="'.idCategBlog($_GET['link']).'") ' : ' 1 ';
-                            $p_categ_cond_inc = (isset($_GET['link']) && $_GET['link'] != '') ? ' (p.categorie="'.idCategBlog($_GET['link']).'" || p.idparent_categ="'.idCategBlog($_GET['link']).'") ' : ' 1 ';
+                            $categ_cond_inc = (isset($_GET['link']) && $_GET['link'] != '') ? ' (pv.categorie IN (SELECT id FROM categories_blog WHERE idparent="'.idCategBlog($_GET['link']).'" || id="'.idCategBlog($_GET['link']).'")) ' : ' 1 ';
+                            $p_categ_cond_inc = (isset($_GET['link']) && $_GET['link'] != '') ? ' (p.categorie IN (SELECT id FROM categories_blog WHERE idparent="'.idCategBlog($_GET['link']).'" || id="'.idCategBlog($_GET['link']).'")) ' : ' 1 ';
                             $promo_cond_inc = (isset($_GET['promo'])) ? ' AND (pv.prix_promo > 0) ' : '';
                             $p_promo_cond_inc = (isset($_GET['promo'])) ? ' AND (v.prix_promo > 0) ' : '';
 
@@ -97,7 +97,7 @@
                         <?php
     					if(isset($_GET['link']) && $_GET['link'] != '' ){
     						$idCategProd = idCategBlog($_GET['link']);
-                    	    $req1 = "SELECT id,raison FROM `marques` WHERE id IN (SELECT marque FROM `produits` WHERE `categorie` = '".$idCategProd."' OR `idparent_categ` = '".$idCategProd."') AND `etat`= '1' ORDER BY `ordre` ASC";
+                    	    $req1 = "SELECT id,raison FROM `marques` WHERE id IN (SELECT marque FROM `produits` WHERE `categorie` IN (SELECT id FROM categories_blog WHERE idparent = '".$idCategProd."' || id = '".$idCategProd."')) AND `etat`= '1' ORDER BY `ordre` ASC";
                     	    $res1 = executeRequete($req1);
                     	        while ($data2 = mysqli_fetch_array($res1)) 
                     	        { 
@@ -252,7 +252,7 @@
     		        <?php 
 				            $categ     =  sanitize($_GET['link']);
 				            $idc       = idCategBlog($categ);
-				            $req = "SELECT DISTINCT pr.marque FROM categories_blog ctg, produits pr WHERE (pr.idparent_categ = '$idc' OR pr.categorie = '$idc') && ctg.link = '$categ' ";
+				            $req = "SELECT DISTINCT pr.marque FROM categories_blog ctg, produits pr WHERE (pr.categorie IN (SELECT id FROM categories_blog WHERE idparent = '$idc' || id = '$idc')) && ctg.link = '$categ' ";
                             $res = executeRequete($req);
     		            while ($datactg = mysqli_fetch_array($res))  {
                             if($datactg['marque'] == '0') continue;

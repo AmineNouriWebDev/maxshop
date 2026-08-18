@@ -105,14 +105,48 @@
                                                          <?php endif; ?>
 
                                                      <?php else: ?>
-                                                         <!-- Blocs standards : crayon + liste + supprimer -->
-                                                         <a href="index.php?r=mbloc_accueil&id=<?php echo afficheChamp($data['id']); ?>" data-toggle="tooltip" data-original-title="Modifier" style="margin-right: 8px;"> <i class="fa fa-pencil text-inverse"></i> </a>
-                                                         <?php if(typeSectionBloc($data['id']) == '4'): ?>
-                                                             <a href="index.php?r=addproduits&id=<?php echo afficheChamp($data['id']); ?>" data-toggle="tooltip" data-original-title="Ajouter produits" style="margin-right: 8px;"> <i class="fa fa-list text-inverse"></i> </a>
-                                                         <?php else: ?>
-                                                             <a href="index.php?r=addSectionContent&id=<?php echo afficheChamp($data['id']); ?>" data-toggle="tooltip" data-original-title="Ajouter section content" style="margin-right: 8px;"> <i class="fa fa-list text-inverse"></i> </a>
-                                                         <?php endif; ?>
-                                                         <a href="javascript:void(0);" data-toggle="tooltip" data-original-title="Supprimer" onclick="confirmGlobalDelete('index.php?r=bloc_accueil&id=<?php echo afficheChamp($data['id']); ?>&action=supp')"> <i class="fa fa-close text-danger"></i></a>
+                                                          <?php
+                                                            $type_id = typeSectionBloc($data['id']);
+                                                            // Determine the single smart button destination
+                                                            if($type_id == '4') {
+                                                                $smart_btn_url = 'index.php?r=addproduits&id=' . afficheChamp($data['id']);
+                                                                $smart_btn_icon = 'fa-list';
+                                                                $smart_btn_title = 'Gérer les produits';
+                                                            } elseif($type_id == '6') {
+                                                                // Banner: direct to content list (most useful)
+                                                                $smart_btn_url = 'index.php?r=addSectionContent&id=' . afficheChamp($data['id']);
+                                                                $smart_btn_icon = 'fa-picture-o';
+                                                                $smart_btn_title = 'Gérer les bannières';
+                                                            } elseif(in_array($type_id, ['1', '5'])) {
+                                                                // Carousel sections: go to content list
+                                                                $smart_btn_url = 'index.php?r=addSectionContent&id=' . afficheChamp($data['id']);
+                                                                $smart_btn_icon = 'fa-images';
+                                                                $smart_btn_title = 'Gérer le contenu';
+                                                            } else {
+                                                                // Other text-based: go to editor
+                                                                $smart_btn_url = 'index.php?r=mbloc_accueil&id=' . afficheChamp($data['id']);
+                                                                $smart_btn_icon = 'fa-pencil';
+                                                                $smart_btn_title = 'Modifier';
+                                                            }
+                                                          ?>
+                                                          <!-- Bouton Configurer (unifié) -->
+                                                          <a href="<?php echo $smart_btn_url; ?>" data-toggle="tooltip" data-original-title="<?php echo $smart_btn_title; ?>" style="margin-right: 8px;">
+                                                              <i class="fa <?php echo $smart_btn_icon; ?> text-inverse"></i>
+                                                          </a>
+                                                          <!-- Config avancée (settings) pour les bannières type 6 -->
+                                                          <?php if($type_id == '6'): ?>
+                                                          <a href="index.php?r=mbloc_accueil&id=<?php echo afficheChamp($data['id']); ?>" data-toggle="tooltip" data-original-title="Paramètres" style="margin-right: 8px;">
+                                                              <i class="fa fa-cog text-inverse"></i>
+                                                          </a>
+                                                          <?php endif; ?>
+                                                          <!-- Toggle Actif/Inactif -->
+                                                          <?php if($data['etat'] == '1'): ?>
+                                                              <a href="index.php?r=bloc_accueil&id=<?php echo afficheChamp($data['id']); ?>&action=toggle" style="color:#2ec4b6;font-weight:600;font-size:.8125rem;border:1px solid #2ec4b6;padding:2px 6px;border-radius:4px;text-decoration:none; margin-right:4px;">Actif</a>
+                                                          <?php else: ?>
+                                                              <a href="index.php?r=bloc_accueil&id=<?php echo afficheChamp($data['id']); ?>&action=toggle" style="color:#ef5350;font-weight:600;font-size:.8125rem;border:1px solid #ef5350;padding:2px 6px;border-radius:4px;text-decoration:none; margin-right:4px;">Inactif</a>
+                                                          <?php endif; ?>
+                                                          <!-- Supprimer -->
+                                                          <a href="javascript:void(0);" data-toggle="tooltip" data-original-title="Supprimer" onclick="confirmGlobalDelete('index.php?r=bloc_accueil&id=<?php echo afficheChamp($data['id']); ?>&action=supp')"> <i class="fa fa-close text-danger"></i></a>
                                                      <?php endif; ?>
                                                  </td>
                                              </tr>

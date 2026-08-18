@@ -54,7 +54,13 @@
                                 <td style="cursor:grab;color:var(--color-text-muted);text-align:center;" class="drag-parent-handle">
                                     <i class="fa fa-arrows-v"></i>
                                 </td>
-                                <td style="font-weight:600;color:var(--color-primary);"><?php echo titreCategBlog($parent['id']); ?></td>
+                                <td style="font-weight:600;color:var(--color-primary);">
+                                    <label class="custom-control custom-checkbox" style="display:inline-block; margin-bottom:0; cursor:pointer; vertical-align:-3px; margin-right:8px;" data-tippy-content="Actif/Inactif">
+                                        <input type="checkbox" id="toggle-<?php echo $parent['id']; ?>" class="custom-control-input" <?php echo ($parent['etat'] == '1') ? 'checked' : ''; ?> onchange="toggleCategoryStatus(<?php echo $parent['id']; ?>, this.checked)">
+                                        <span class="custom-control-indicator" style="top:0;"></span>
+                                    </label>
+                                    <?php echo titreCategBlog($parent['id']); ?>
+                                </td>
                                 <td>
                                     <span class="status-badge <?php echo typeCategBlog($parent['id'])=='A'?'confirmed':'pending'; ?>">
                                         <?php echo typeCategBlog($parent['id'])=='A'?'Abonnement':'Equipement'; ?>
@@ -85,6 +91,10 @@
                                 </td>
                                 <td style="padding-left:2rem;position:relative;font-weight:500;">
                                     <span style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--color-border-strong);">↳</span>
+                                    <label class="custom-control custom-checkbox" style="display:inline-block; margin-bottom:0; cursor:pointer; vertical-align:-3px; margin-right:8px;" data-tippy-content="Actif/Inactif">
+                                        <input type="checkbox" id="toggle-<?php echo $sub['id']; ?>" class="custom-control-input" <?php echo ($sub['etat'] == '1') ? 'checked' : ''; ?> onchange="toggleCategoryStatus(<?php echo $sub['id']; ?>, this.checked)">
+                                        <span class="custom-control-indicator" style="top:0;"></span>
+                                    </label>
                                     <?php echo titreCategBlog($sub['id']); ?>
                                 </td>
                                 <td>
@@ -131,40 +141,6 @@
     </div>
 </div>
 
-<?php
-$checkCol = mysqli_query($connexion, "SHOW COLUMNS FROM site_configuration LIKE 'afficher_abonnements'");
-if(mysqli_num_rows($checkCol) == 0) {
-    mysqli_query($connexion, "ALTER TABLE site_configuration ADD COLUMN afficher_abonnements enum('0','1') NOT NULL DEFAULT '1'");
-}
-$reqCfg = mysqli_query($connexion, "SELECT afficher_abonnements FROM site_configuration LIMIT 1");
-$cfgData = mysqli_fetch_assoc($reqCfg);
-$afficher_abonnements = isset($cfgData['afficher_abonnements']) ? $cfgData['afficher_abonnements'] : '1';
-?>
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="admin-card" style="border: 1px solid var(--color-primary);">
-            <div class="admin-card-header" style="background: rgba(59, 130, 246, 0.05);">
-                <div class="admin-card-title">
-                    <i class="fa fa-power-off" style="color:var(--color-primary); margin-right:8px;"></i>
-                    Gestion globale des Abonnements
-                </div>
-            </div>
-            <div class="admin-card-body">
-                <p>Ce bouton permet d'activer ou de désactiver complètement l'affichage de tous les produits et sous-catégories de type <strong>Abonnement</strong> sur le site public.</p>
-                
-                <div class="form-check form-switch mt-3" style="display: flex; align-items: center; gap: 10px;">
-                    <label class="custom-control custom-checkbox" style="margin-bottom:0; cursor:pointer;">
-                        <input type="checkbox" class="custom-control-input" id="toggleAbonnements" <?php echo ($afficher_abonnements == '1') ? 'checked' : ''; ?> onchange="toggleGlobalAbonnements(this.checked)">
-                        <span class="custom-control-indicator" style="top:0.1rem;"></span>
-                        <span class="custom-control-description" id="toggleLabel" style="font-weight:600; font-size:1.05rem; padding-left:1.5rem; color: <?php echo ($afficher_abonnements == '1') ? 'var(--color-success, #22c55e)' : 'var(--color-error, #ef4444)'; ?>">
-                            <?php echo ($afficher_abonnements == '1') ? 'Abonnements Activés' : 'Abonnements Désactivés'; ?>
-                        </span>
-                    </label>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
@@ -222,27 +198,26 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    window.toggleGlobalAbonnements = function(isChecked) {
+    window.toggleCategoryStatus = function(id, isChecked) {
         var status = isChecked ? '1' : '0';
-        var label = document.getElementById('toggleLabel');
-        
         $.ajax({
-            url: 'ajax_toggle_abonnements.php',
+            url: 'ajax_toggle_category_status.php',
             method: 'POST',
-            data: { status: status },
+            data: { id: id, status: status },
             success: function(res) {
                 try {
                     var r = JSON.parse(res);
                     if(r.status === 'success') {
-                        if(isChecked) {
-                            label.innerText = 'Abonnements Activés';
-                            label.style.color = 'var(--color-success, #22c55e)';
-                        } else {
-                            label.innerText = 'Abonnements Désactivés';
-                            label.style.color = 'var(--color-error, #ef4444)';
+                        if (r.subs && r.subs.length > 0) {
+                            r.subs.forEach(function(subId) {
+                                var subCheckbox = document.getElementById('toggle-' + subId);
+                                if (subCheckbox) {
+                                    subCheckbox.checked = isChecked;
+                                }
+                            });
                         }
                         if (typeof showToast === 'function') {
-                            showToast('Paramètre mis à jour avec succès', 'success');
+                            showToast('Statut mis à jour avec succès', 'success');
                         }
                     } else {
                         alert('Erreur: ' + r.message);

@@ -251,10 +251,30 @@ $is_catrapide = ($type_sec == '10');
             <?php if(!$is_ticker && !$is_trust && !$is_catrapide) { ?>
             <!-- IMAGE BLOCK -->
             <div style="background:color-mix(in srgb, var(--color-primary) 4%, transparent); border:1px dashed color-mix(in srgb, var(--color-primary) 35%, transparent); border-radius:0.75rem; padding:1.25rem; margin-bottom:1.5rem;">
-                <label style="font-weight:700; font-size:0.875rem; color:var(--color-primary); display:block; margin-bottom:1rem;">
+                <label style="font-weight:700; font-size:0.875rem; color:var(--color-primary); display:block; margin-bottom:0.5rem;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                     Image / Visuel
                 </label>
+                <?php if($type_sec == '6'): // Banner section — show specific advice ?>
+                <div style="background:color-mix(in srgb, #f59e0b 10%, transparent); border-left:3px solid #f59e0b; padding:0.625rem 0.875rem; border-radius:0.375rem; margin-bottom:1rem; font-size:0.8125rem;">
+                    <strong style="color:#b45309;">📐 Dimensions recommandées pour les bannières :</strong><br>
+                    <span style="color:var(--color-text-secondary);">
+                        • <strong>Desktop</strong> : <code>1200 × 360 px</code> (ratio 16:5) — La hauteur est fixée à 360px par le site<br>
+                        • <strong>Tablette</strong> : <code>800 × 320 px</code> (ratio 5:2)<br>
+                        • <strong>Mobile</strong> : <code>600 × 260 px</code> (ratio 7:3)<br>
+                        ⚠️ Évitez les images portrait (plus hautes que larges) — elles seront recadrées en hauteur.
+                    </span>
+                </div>
+                <?php else: ?>
+                <div style="background:color-mix(in srgb, var(--color-primary) 6%, transparent); border-left:3px solid var(--color-primary); padding:0.625rem 0.875rem; border-radius:0.375rem; margin-bottom:1rem; font-size:0.8125rem;">
+                    <strong style="color:var(--color-primary);">📐 Dimensions recommandées :</strong><br>
+                    <span style="color:var(--color-text-secondary);">
+                        • <strong>Desktop</strong> : <code>1200 × 600 px</code> (ratio 2:1)<br>
+                        • <strong>Tablette</strong> : <code>800 × 500 px</code><br>
+                        • <strong>Mobile</strong> : <code>600 × 400 px</code>
+                    </span>
+                </div>
+                <?php endif; ?>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
@@ -263,18 +283,18 @@ $is_catrapide = ($type_sec == '10');
                                 Option 1 : Télécharger depuis votre PC
                             </label>
                             <div style="margin-bottom:10px;">
-                                <label style="font-size:0.75rem; font-weight:600;">Image Desktop <span style="color:var(--color-text-muted)">(Défaut)</span></label>
+                                <label style="font-size:0.75rem; font-weight:600;">Image Desktop <span style="color:var(--color-text-muted)">(Défaut)</span> — <code style="font-size:0.7rem; color:var(--color-primary);"><?php echo ($type_sec == '6') ? '1200×360px' : '1200×600px'; ?></code></label>
                                 <input type="file" name="image" accept="image/*" class="admin-input" style="padding:0.4rem;">
                             </div>
                             <div style="margin-bottom:10px;">
-                                <label style="font-size:0.75rem; font-weight:600;">Image Tablette <span style="color:var(--color-text-muted)">(Optionnel)</span></label>
+                                <label style="font-size:0.75rem; font-weight:600;">Image Tablette <span style="color:var(--color-text-muted)">(Optionnel)</span> — <code style="font-size:0.7rem; color:var(--color-primary);"><?php echo ($type_sec == '6') ? '800×320px' : '800×500px'; ?></code></label>
                                 <input type="file" name="photo_tablet" accept="image/*" class="admin-input" style="padding:0.4rem;">
                             </div>
                             <div style="margin-bottom:10px;">
-                                <label style="font-size:0.75rem; font-weight:600;">Image Mobile <span style="color:var(--color-text-muted)">(Optionnel)</span></label>
+                                <label style="font-size:0.75rem; font-weight:600;">Image Mobile <span style="color:var(--color-text-muted)">(Optionnel)</span> — <code style="font-size:0.7rem; color:var(--color-primary);"><?php echo ($type_sec == '6') ? '600×260px' : '600×400px'; ?></code></label>
                                 <input type="file" name="photo_mobile" accept="image/*" class="admin-input" style="padding:0.4rem;">
                             </div>
-                            <small style="color:var(--color-text-muted); font-size:0.75rem;">JPG, PNG, GIF, WEBP</small>
+                            <small style="color:var(--color-text-muted); font-size:0.75rem;">Formats acceptés : JPG, PNG, GIF, WEBP — Convertis automatiquement en WebP.</small>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -304,11 +324,13 @@ $is_catrapide = ($type_sec == '10');
                             Affiché sur la bannière en page d'accueil.
                         </small>
                     </div>
-                    <?php if(!$is_ticker && !$is_catrapide) { ?>
+                    <?php if(!$is_ticker && !$is_catrapide && !$is_trust && $type_sec != '6') { ?>
                     <div class="form-group">
                         <label class="form-label">Contenu / Sous-titre <small style="color:var(--color-text-muted)">(Pour Trust)</small></label>
                         <textarea name="contenu" class="admin-input" rows="2" placeholder="Description courte..."></textarea>
                     </div>
+                    <?php } else { ?>
+                        <input type="hidden" name="contenu" value="">
                     <?php } ?>
                 </div>
                 <div class="col-md-6">

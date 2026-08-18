@@ -70,6 +70,13 @@ function renderGridCard($id_p, $link_p, $qty, $vprice_js, $vname_js, $sp_disc, $
     $prix_promo = prixPromoProduits($id_p);
     $has_promo = ($prix_promo && $prix_promo != '0.000');
 
+    // Flash sale info
+    $flash_q = executeRequete("SELECT is_flash, promo_end_date FROM produits WHERE id='".intval($id_p)."'");
+    $flash_data = mysqli_fetch_assoc($flash_q);
+    $is_flash = ($flash_data && $flash_data['is_flash'] == 1);
+    $promo_end_ts = ($flash_data && !empty($flash_data['promo_end_date'])) ? strtotime($flash_data['promo_end_date']) : 0;
+    $show_countdown = $is_flash && $has_promo && $promo_end_ts > time();
+
     $discount = 0;
     if ($has_promo && floatval($prix_vente) > 0) {
         $discount = round(((floatval($prix_vente) - floatval($prix_promo)) / floatval($prix_vente)) * 100);
@@ -78,6 +85,19 @@ function renderGridCard($id_p, $link_p, $qty, $vprice_js, $vname_js, $sp_disc, $
     $badge_html = '';
     if ($discount > 0) {
         $badge_html = '<div class="hp-badge-abs left"><span class="hp-badge hp-badge-promo">-'.$discount.'%</span></div>';
+    }
+    if ($is_flash && $has_promo) {
+        $badge_html .= '<div class="hp-badge-abs right"><span class="hp-badge" style="background:linear-gradient(135deg,#f97316,#ef4444);color:white;animation:glow-pulse 2s ease-in-out infinite;">🔥 Flash</span></div>';
+    }
+
+    // Flash countdown overlay on image
+    $countdown_html = '';
+    if ($show_countdown) {
+        $countdown_html = '
+        <div style="position:absolute;bottom:8px;left:8px;right:8px;background:rgba(0,0,0,0.75);color:white;border-radius:6px;padding:5px 8px;text-align:center;font-weight:700;font-size:0.72rem;z-index:10;display:flex;align-items:center;justify-content:center;gap:6px;backdrop-filter:blur(4px);box-shadow:0 2px 10px rgba(0,0,0,0.3);outline:1px solid rgba(255,152,0,0.5);">
+            <span style="color:#ffb74d;">⏱</span>
+            <span class="flash-countdown" data-end="'.$promo_end_ts.'" style="letter-spacing:1px;">...</span>
+        </div>';
     }
 
     $marque_html = '';
@@ -119,7 +139,7 @@ function renderGridCard($id_p, $link_p, $qty, $vprice_js, $vname_js, $sp_disc, $
             <a href="'.$lien.'" tabindex="-1">
               <img src="'.$photo.'" alt="'.htmlspecialchars($titre).'" loading="lazy">
             </a>
-            
+            '.$countdown_html.'
             <div class="hp-card-overlay">
               <button class="hp-card-overlay-btn compare-ol"
                 data-compare-id="'.$id_p.'"
@@ -292,7 +312,7 @@ if(isset($_POST["action"]) )
     if($type_filter == '' || $type_filter == 'produit' || $type_filter == 'E' || $type_filter == 'A')
 	{
 		
-		$query = "	SELECT DISTINCT pr.id, pr.link FROM produits pr, categories_blog ctg WHERE pr.etat = '1'";
+		$query = "	SELECT DISTINCT pr.id, pr.link FROM produits pr, categories_blog ctg WHERE pr.etat = '1' AND pr.categorie IN (SELECT id FROM categories_blog WHERE etat='1')";
         if (isset($afficher_abonnements) && $afficher_abonnements == '0') {
             $query .= " AND pr.type != 'A'";
         }
@@ -300,15 +320,23 @@ if(isset($_POST["action"]) )
 		{
 			$link_filter =  $_POST["link"];
 			$query .= "
-			 AND pr.categorie ='".$link_filter."'
+			 AND (pr.categorie IN (SELECT id FROM categories_blog WHERE idparent = '".$link_filter."' || id = '".$link_filter."'))
 			";
 		}
-		if(isset($_POST["brand"]))
+		if(isset($_POST["brand"]) && !empty($_POST["brand"]))
 		{
 			$brand_filter = implode("','", $_POST["brand"]);
 			$query .= "
 			 AND pr.marque IN('".$brand_filter."')
 			";
+		}
+		elseif(isset($_POST["marque"]) && $_POST["marque"]!= '' )
+		{
+			$marque_link = sanitize($_POST["marque"]);
+			$marque_id = idraisonMarque($marque_link);
+			if($marque_id) {
+				$query .= " AND pr.marque = '".$marque_id."' ";
+			}
 		}
 		if(isset($_POST["category"]))
 		{
@@ -440,7 +468,7 @@ if(isset($_POST["action"]) )
 	elseif($type_filter == 'E')
 	{
 	
-		$query = "	SELECT DISTINCT pr.id, pr.link FROM produits pr, categories_blog ctg WHERE pr.etat = '1'  AND pr.type = 'E'";
+		$query = "	SELECT DISTINCT pr.id, pr.link FROM produits pr, categories_blog ctg WHERE pr.etat = '1'  AND pr.type = 'E' AND pr.categorie IN (SELECT id FROM categories_blog WHERE etat='1')";
         if (isset($afficher_abonnements) && $afficher_abonnements == '0') {
             $query .= " AND pr.type != 'A'";
         }
@@ -448,15 +476,23 @@ if(isset($_POST["action"]) )
 		{
 			$link_filter =  $_POST["link"];
 			$query .= "
-			 AND pr.categorie ='".$link_filter."'
+			 AND (pr.categorie IN (SELECT id FROM categories_blog WHERE idparent = '".$link_filter."' || id = '".$link_filter."'))
 			";
 		}
-		if(isset($_POST["brand"]))
+		if(isset($_POST["brand"]) && !empty($_POST["brand"]))
 		{
 			$brand_filter = implode("','", $_POST["brand"]);
 			$query .= "
 			 AND pr.marque IN('".$brand_filter."')
 			";
+		}
+		elseif(isset($_POST["marque"]) && $_POST["marque"]!= '' )
+		{
+			$marque_link = sanitize($_POST["marque"]);
+			$marque_id = idraisonMarque($marque_link);
+			if($marque_id) {
+				$query .= " AND pr.marque = '".$marque_id."' ";
+			}
 		}
 		if(isset($_POST["category"]))
 		{
@@ -558,7 +594,7 @@ if(isset($_POST["action"]) )
 	
 	}elseif($type_filter == 'A'){
 		
-		$query = " SELECT DISTINCT pr.id, pr.link FROM produits pr,categories_blog ctg WHERE pr.etat = '1'  AND pr.type = 'A'";
+		$query = " SELECT DISTINCT pr.id, pr.link FROM produits pr,categories_blog ctg WHERE pr.etat = '1'  AND pr.type = 'A' AND pr.categorie IN (SELECT id FROM categories_blog WHERE etat='1')";
         if (isset($afficher_abonnements) && $afficher_abonnements == '0') {
             $query .= " AND 1=0 ";
         }
@@ -566,15 +602,23 @@ if(isset($_POST["action"]) )
 		{
 			$link_filter =  $_POST["link"];
 			$query .= "
-			 AND pr.categorie ='".$link_filter."'
+			 AND (pr.categorie IN (SELECT id FROM categories_blog WHERE idparent = '".$link_filter."' || id = '".$link_filter."'))
 			";
 		}
-		if(isset($_POST["brand"]))
+		if(isset($_POST["brand"]) && !empty($_POST["brand"]))
 		{
 			$brand_filter = implode("','", $_POST["brand"]);
 			$query .= "
 			 AND pr.marque IN('".$brand_filter."')
 			";
+		}
+		elseif(isset($_POST["marque"]) && $_POST["marque"]!= '' )
+		{
+			$marque_link = sanitize($_POST["marque"]);
+			$marque_id = idraisonMarque($marque_link);
+			if($marque_id) {
+				$query .= " AND pr.marque = '".$marque_id."' ";
+			}
 		}
 		if(isset($_POST["category"]))
 		{

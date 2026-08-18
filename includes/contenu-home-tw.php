@@ -178,12 +178,15 @@
   border-radius: 1.5rem;
   overflow: hidden;
   position: relative;
+  height: 260px; /* Hauteur fixe pour uniformité — indépendamment des dimensions des images */
   min-height: 180px;
   display: flex;
   align-items: stretch;
   text-decoration: none;
   transition: transform 300ms ease, box-shadow 300ms ease;
 }
+@media (min-width: 768px) { .hp-promo-card { height: 320px; } }
+@media (min-width: 1200px) { .hp-promo-card { height: 360px; } }
 .hp-promo-card:hover {
   transform: scale(1.015);
   box-shadow: var(--shop-shadow-soft-lg, 0 8px 40px rgba(18,11,46,0.12));
@@ -762,9 +765,33 @@
   <?php if (!empty($bnrs)): ?>
   <div class="<?php echo $section_class; ?>" id="<?php echo ancreBloc($bloc_id); ?>">
     <div class="hp-container">
-      <?php if (affichageTitreBloc($bloc_id) == '1'): ?>
+      <?php 
+        // Section header with title, badge_titre and icône
+        $show_bloc_titre = affichageTitreBloc($bloc_id) == '1';
+        $bloc_badge = $bloc['badge_titre'] ?? '';
+        $bloc_icone = $bloc['icone'] ?? '';
+        if($show_bloc_titre || $bloc_badge):
+      ?>
         <div class="hp-section-header">
-          <h2 class="hp-section-title"><?php echo titreBloc($bloc_id); ?></h2>
+          <div>
+            <?php if($bloc_badge || $bloc_icone): ?>
+              <div class="hp-flash-badge" style="display:inline-flex; align-items:center; margin-bottom:0.625rem; background: color-mix(in srgb, var(--shop-primary) 90%, #000);">
+                <?php if($bloc_icone): ?>
+                  <i class="<?php echo htmlspecialchars($bloc_icone); ?>"></i>&nbsp;
+                <?php endif; ?>
+                <?php if($bloc_badge): echo htmlspecialchars($bloc_badge); endif; ?>
+              </div>
+            <?php endif; ?>
+            <?php if($show_bloc_titre): ?>
+              <h2 class="hp-section-title"><?php echo titreBloc($bloc_id); ?></h2>
+            <?php endif; ?>
+          </div>
+          <?php $bloc_lien = lienBloc($bloc_id); if($bloc_lien): ?>
+            <a href="<?php echo htmlspecialchars(fixLien($bloc_lien)); ?>" class="hp-see-all">
+              Voir tout
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          <?php endif; ?>
         </div>
       <?php endif; ?>
 
@@ -799,6 +826,7 @@
           $bnr_titre = !empty($bnr['titre']) ? $bnr['titre'] : '';
           $bnr_lien  = !empty($bnr['lien']) ? $bnr['lien'] : '#';
           $bnr_btn   = !empty($bnr['titre_bouton']) ? $bnr['titre_bouton'] : 'Découvrir';
+          $bnr_icone = !empty($bnr['icone']) ? $bnr['icone'] : '';
         ?>
           <a href="<?php echo htmlspecialchars(fixLien($bnr_lien)); ?>" class="hp-promo-card hp-reveal-item">
             <?php if($bnr_img): ?>
@@ -809,7 +837,13 @@
             
             <?php if($bnr_titre): ?>
               <div class="hp-promo-ribbon">
-                <span class="hp-promo-ribbon-icon" style="margin-right: 0.25rem;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
+                <span class="hp-promo-ribbon-icon" style="margin-right: 0.25rem;">
+                  <?php if($bnr_icone): ?>
+                    <i class="<?php echo htmlspecialchars($bnr_icone); ?>"></i>
+                  <?php else: ?>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                  <?php endif; ?>
+                </span>
                 <span class="hp-promo-ribbon-text" style="padding-left: 0.25rem;" title="<?php echo htmlspecialchars($bnr_titre); ?>"><?php echo htmlspecialchars($bnr_titre); ?></span>
               </div>
             <?php endif; ?>
@@ -822,11 +856,6 @@
                   </span>
                 <?php endif; ?>
             </div>
-            <!-- Bouton comparer sur hp-promo-card (overlay) -->
-            <?php 
-              // Si le lien est un produit (contient /produit/), on peut extraire le lien et essayer de l'associer.
-              // Mais ici on n'a pas forcément l'ID produit. On va l'ignorer si non produit.
-              // En fait, mieux vaut ne pas mettre comparer sur les bannières promo s'il n'y a pas d'ID clair.
             ?>
           </a>
         <?php endforeach; ?>
