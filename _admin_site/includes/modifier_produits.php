@@ -450,7 +450,7 @@ if (isset($_POST['action']) && $_POST['action'] == "mod") {
                                         </div>
                                     </div>                             
                                     <div class="admin-form-group">
-                                        <label>Remarque</label>
+                                        <label>Remarque / Référence (Recherchable)</label>
                                         <div class="controls">
                                           <textarea name="remarque" value="" class="admin-input" rows="3"><?php echo rqProduits($_GET['id']); ?></textarea>
                                         </div>

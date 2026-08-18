@@ -42,7 +42,7 @@ $q_safe = sanitize($q);  // sanitize() = mysqli_real_escape_string from connec.p
 $req_products = "SELECT DISTINCT p.id, p.titre, p.link, p.prix_vente, p.prix_promo, p.is_flash, p.promo_end_date
                  FROM `produits` p
                  WHERE p.etat = '1'
-                   AND p.titre LIKE '%{$q_safe}%'
+                   AND (p.titre LIKE '%{$q_safe}%' OR p.remarque LIKE '%{$q_safe}%')
                    AND p.categorie IN (SELECT id FROM categories_blog WHERE etat='1')";
 
 if (isset($afficher_abonnements) && $afficher_abonnements == '0') {

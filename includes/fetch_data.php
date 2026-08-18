@@ -350,7 +350,7 @@ if(isset($_POST["action"]) )
             $search= url_rewrite($_POST["search"]);
                     		
             //$query .= " AND ( pr.titre LIKE '%$search%' OR pr.caracteristique LIKE '%$search%' OR pr.link LIKE '%$search%' OR ctg.titre LIKE '%$search%' OR ctg.link LIKE '%$search%') ";
-            $query .= " AND ( pr.titre LIKE '%$search%' OR pr.link LIKE '%$search%' ) ";
+            $query .= " AND ( pr.titre LIKE '%$search%' OR pr.link LIKE '%$search%' OR pr.remarque LIKE '%$search%' ) ";
                                 
         }
 		if(isset($_POST["caracteristique"]) && $_POST["caracteristique"]!= '' ){
@@ -506,7 +506,7 @@ if(isset($_POST["action"]) )
             $search= url_rewrite($_POST["search"]);
                     		
             //$query .= " AND ( pr.titre LIKE '%$search%' OR pr.caracteristique LIKE '%$search%' OR pr.link LIKE '%$search%' OR ctg.titre LIKE '%$search%' OR ctg.link LIKE '%$search%') ";
-            $query .= " AND ( pr.titre LIKE '%$search%' OR pr.link LIKE '%$search%' ) ";
+            $query .= " AND ( pr.titre LIKE '%$search%' OR pr.link LIKE '%$search%' OR pr.remarque LIKE '%$search%' ) ";
                                 
         }
             
@@ -632,7 +632,7 @@ if(isset($_POST["action"]) )
             $search= url_rewrite($_POST["search"]);
                     		
             //$query .= " AND ( pr.titre LIKE '%$search%' OR pr.caracteristique LIKE '%$search%' OR pr.link LIKE '%$search%' OR ctg.titre LIKE '%$search%' OR ctg.link LIKE '%$search%') ";
-            $query .= " AND ( pr.titre LIKE '%$search%' OR pr.link LIKE '%$search%' ) ";
+            $query .= " AND ( pr.titre LIKE '%$search%' OR pr.link LIKE '%$search%' OR pr.remarque LIKE '%$search%' ) ";
                                 
         }
             
