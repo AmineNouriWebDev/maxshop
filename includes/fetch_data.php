@@ -320,7 +320,7 @@ if(isset($_POST["action"]) )
 		{
 			$link_filter =  $_POST["link"];
 			$query .= "
-			 AND (pr.categorie IN (SELECT id FROM categories_blog WHERE idparent = '".$link_filter."' || id = '".$link_filter."'))
+			 AND (pr.categorie IN (SELECT id FROM categories_blog WHERE idparent IN (SELECT id FROM categories_blog WHERE idparent = '".$link_filter."') OR idparent = '".$link_filter."' OR id = '".$link_filter."'))
 			";
 		}
 		if(isset($_POST["brand"]) && !empty($_POST["brand"]))
@@ -367,7 +367,7 @@ if(isset($_POST["action"]) )
                 $ctg= $_POST["categoryByTitre"];
                         		
                 //$query .= " AND ( ctg.titre LIKE '%$ctg%'  OR ctg.link LIKE '%$ctg%' OR  pr.idparent_categ = ctg.id OR pr.categorie = ctg.id AND ( pr.categorie IN ( SELECT id FROM categories_blog WHERE idparent = '".idBySearchCategBlog($ctg)."' ) ) ) ";
-                $query .= " AND ( pr.categorie IN ( SELECT id FROM categories_blog WHERE idparent = '".idBySearchCategBlog($ctg)."' || id = '".idBySearchCategBlog($ctg)."' ) ) ";
+                $query .= " AND ( pr.categorie IN ( SELECT id FROM categories_blog WHERE idparent IN (SELECT id FROM categories_blog WHERE idparent = '".idBySearchCategBlog($ctg)."') OR idparent = '".idBySearchCategBlog($ctg)."' OR id = '".idBySearchCategBlog($ctg)."' ) ) ";
                                      
         }
 		
@@ -476,7 +476,7 @@ if(isset($_POST["action"]) )
 		{
 			$link_filter =  $_POST["link"];
 			$query .= "
-			 AND (pr.categorie IN (SELECT id FROM categories_blog WHERE idparent = '".$link_filter."' || id = '".$link_filter."'))
+			 AND (pr.categorie IN (SELECT id FROM categories_blog WHERE idparent IN (SELECT id FROM categories_blog WHERE idparent = '".$link_filter."') OR idparent = '".$link_filter."' OR id = '".$link_filter."'))
 			";
 		}
 		if(isset($_POST["brand"]) && !empty($_POST["brand"]))
@@ -515,7 +515,7 @@ if(isset($_POST["action"]) )
                 $ctg= $_POST["categoryByTitre"];
                         		
                 //$query .= " AND ( ctg.titre LIKE '%$ctg%'  OR ctg.link LIKE '%$ctg%' OR  pr.idparent_categ = ctg.id OR pr.categorie = ctg.id AND ( pr.categorie IN ( SELECT id FROM categories_blog WHERE idparent = '".idBySearchCategBlog($ctg)."' ) ) ) ";
-                $query .= " AND ( pr.categorie IN ( SELECT id FROM categories_blog WHERE idparent = '".idBySearchCategBlog($ctg)."' || id = '".idBySearchCategBlog($ctg)."' ) ) ";
+                $query .= " AND ( pr.categorie IN ( SELECT id FROM categories_blog WHERE idparent IN (SELECT id FROM categories_blog WHERE idparent = '".idBySearchCategBlog($ctg)."') OR idparent = '".idBySearchCategBlog($ctg)."' OR id = '".idBySearchCategBlog($ctg)."' ) ) ";
                                      
         }
 		
@@ -602,7 +602,7 @@ if(isset($_POST["action"]) )
 		{
 			$link_filter =  $_POST["link"];
 			$query .= "
-			 AND (pr.categorie IN (SELECT id FROM categories_blog WHERE idparent = '".$link_filter."' || id = '".$link_filter."'))
+			 AND (pr.categorie IN (SELECT id FROM categories_blog WHERE idparent IN (SELECT id FROM categories_blog WHERE idparent = '".$link_filter."') OR idparent = '".$link_filter."' OR id = '".$link_filter."'))
 			";
 		}
 		if(isset($_POST["brand"]) && !empty($_POST["brand"]))
@@ -641,7 +641,7 @@ if(isset($_POST["action"]) )
                 $ctg= $_POST["categoryByTitre"];
                         		
                 //$query .= " AND ( ctg.titre LIKE '%$ctg%'  OR ctg.link LIKE '%$ctg%' OR  pr.idparent_categ = ctg.id OR pr.categorie = ctg.id AND ( pr.categorie IN ( SELECT id FROM categories_blog WHERE idparent = '".idBySearchCategBlog($ctg)."' ) ) ) ";
-                $query .= " AND ( pr.categorie IN ( SELECT id FROM categories_blog WHERE idparent = '".idBySearchCategBlog($ctg)."' || id = '".idBySearchCategBlog($ctg)."' ) ) ";
+                $query .= " AND ( pr.categorie IN ( SELECT id FROM categories_blog WHERE idparent IN (SELECT id FROM categories_blog WHERE idparent = '".idBySearchCategBlog($ctg)."') OR idparent = '".idBySearchCategBlog($ctg)."' OR id = '".idBySearchCategBlog($ctg)."' ) ) ";
                                      
         }
 		

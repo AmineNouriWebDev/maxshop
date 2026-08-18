@@ -118,6 +118,46 @@
                                     </a>
                                 </td>
                             </tr>
+                            
+                            <?php 
+                            $reqGrandSubs = 'SELECT * FROM `categories_blog` WHERE `idparent`="'.$sub['id'].'" ORDER BY `ordre` ASC';
+                            $resGrandSubs = executeRequete($reqGrandSubs);
+                            while ($grandSub = mysqli_fetch_array($resGrandSubs)): 
+                            ?>
+                            <tr class="sub-row" data-id="<?php echo $grandSub['id']; ?>" data-parent-id="<?php echo $sub['id']; ?>">
+                                <td style="cursor:grab;color:var(--color-text-muted);text-align:center;padding-left:1.5rem;" class="drag-sub-handle">
+                                    <i class="fa fa-arrows-v"></i>
+                                </td>
+                                <td style="padding-left:3.5rem;position:relative;font-weight:400;font-size:0.95em;">
+                                    <span style="position:absolute;left:2.5rem;top:50%;transform:translateY(-50%);color:var(--color-border-strong);">↳</span>
+                                    <label class="custom-control custom-checkbox" style="display:inline-block; margin-bottom:0; cursor:pointer; vertical-align:-3px; margin-right:8px;" data-tippy-content="Actif/Inactif">
+                                        <input type="checkbox" id="toggle-<?php echo $grandSub['id']; ?>" class="custom-control-input" <?php echo ($grandSub['etat'] == '1') ? 'checked' : ''; ?> onchange="toggleCategoryStatus(<?php echo $grandSub['id']; ?>, this.checked)">
+                                        <span class="custom-control-indicator" style="top:0;"></span>
+                                    </label>
+                                    <?php echo titreCategBlog($grandSub['id']); ?>
+                                </td>
+                                <td>
+                                    <span class="status-badge <?php echo typeCategBlog($grandSub['id'])=='A'?'confirmed':'pending'; ?>">
+                                        <?php echo typeCategBlog($grandSub['id'])=='A'?'Abonnement':'Equipement'; ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span style="font-weight:500;"><?php echo auteur_name($grandSub['auteur']); ?></span><br/>
+                                    <span style="font-size:0.75rem;color:var(--color-text-muted);"><?php echo timestampTDtodate($grandSub['datecreation']); ?></span>
+                                </td>
+                                <td class="text-nowrap" style="text-align:right;display:flex;justify-content:flex-end;gap:0.25rem;">
+                                    <a href="index.php?r=mcategorie_blog&id=<?php echo $grandSub['id']; ?>" data-tippy-content="Modifier" class="admin-btn admin-btn-sm admin-btn-ghost" style="padding:0.4rem;border:none;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;"><path d="M21.731 2.269a2.625 2.625 0 0 0-3.712 0l-1.157 1.158 3.71 3.71 1.159-1.159a2.625 2.625 0 0 0 0-3.71ZM19.513 8.199l-3.71-3.71-12.15 12.152a3 3 0 0 0-.853 1.5l-1.09 4.364a.75.75 0 0 0 .907.908l4.365-1.09a3 3 0 0 0 1.5-.853L19.513 8.2Z"/></svg>
+                                    </a>
+                                    <a href="index.php?r=categoriesMarques&id=<?php echo $grandSub['id']; ?>" data-tippy-content="Associer Marques" class="admin-btn admin-btn-sm admin-btn-ghost" style="padding:0.4rem;border:none;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;"><path fill-rule="evenodd" d="M10.5 3A1.5 1.5 0 0 0 9 4.5v6H4.5a1.5 1.5 0 0 0-1.5 1.5v6A1.5 1.5 0 0 0 4.5 19.5h6v-6h4.5a1.5 1.5 0 0 0 1.5-1.5v-6A1.5 1.5 0 0 0 15 4.5h-4.5ZM12 9V4.5H9v6h3V9ZM13.5 15v4.5h-3v-6h4.5v1.5H13.5ZM6 18v-6H4.5v6H6Z" clip-rule="evenodd"/></svg>
+                                    </a>
+                                    <a href="javascript:void(0);" onclick="confirmGlobalDelete('index.php?r=categories_blog&id=<?php echo $grandSub['id']; ?>&action=supp')" data-tippy-content="Supprimer" class="admin-btn admin-btn-sm admin-btn-ghost" style="padding:0.4rem;border:none;color:var(--color-error);">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;"><path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.442.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z" clip-rule="evenodd"/></svg>
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endwhile; ?>
                             <?php endwhile; ?>
 
                         </tbody><!-- fin cat-group -->

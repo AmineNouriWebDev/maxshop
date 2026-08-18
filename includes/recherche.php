@@ -101,7 +101,7 @@
     					if(isset($_GET['link']) && $_GET['link'] != '' ){
     						$idCategProd = idCategBlog($_GET['link']);
     						//echo $idCategProd;
-                    	    $req1 = "SELECT id,raison FROM `marques` WHERE id IN (SELECT marque FROM `produits` WHERE `categorie` IN (SELECT id FROM categories_blog WHERE idparent = '".$idCategProd."' || id = '".$idCategProd."')) AND `etat`= '1' ORDER BY `ordre` ASC";
+                    	    $req1 = "SELECT id,raison FROM `marques` WHERE id IN (SELECT marque FROM `produits` WHERE `categorie` IN (SELECT id FROM categories_blog WHERE idparent IN (SELECT id FROM categories_blog WHERE idparent = '".$idCategProd."') OR idparent = '".$idCategProd."' OR id = '".$idCategProd."')) AND `etat`= '1' ORDER BY `ordre` ASC";
                     	    $res1 = executeRequete($req1);
                     	    
                     	}elseif(isset($_GET['marque']) && $_GET['marque'] != '' ){
@@ -135,7 +135,7 @@
     					
     					if(isset($_GET['link']) && $_GET['link'] != '' ){
     						 $idCategProd = idCategBlog($_GET['link']);
-                        	 $req3 = "SELECT * FROM `caracteristique_prod` WHERE valeur != '0' AND  `idproduit` IN (SELECT id FROM `produits` WHERE `categorie` IN (SELECT id FROM categories_blog WHERE idparent = '".$idCategProd."' || id = '".$idCategProd."')) GROUP BY idcarac ORDER BY `id` ASC";
+                        	 $req3 = "SELECT * FROM `caracteristique_prod` WHERE valeur != '0' AND  `idproduit` IN (SELECT id FROM `produits` WHERE `categorie` IN (SELECT id FROM categories_blog WHERE idparent IN (SELECT id FROM categories_blog WHERE idparent = '".$idCategProd."') OR idparent = '".$idCategProd."' OR id = '".$idCategProd."')) GROUP BY idcarac ORDER BY `id` ASC";
                         	 //echo $req3; 
                         	 $res3 = executeRequete($req3);
     					}else{

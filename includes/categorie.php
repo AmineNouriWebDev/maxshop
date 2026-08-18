@@ -97,7 +97,7 @@
                         <?php
     					if(isset($_GET['link']) && $_GET['link'] != '' ){
     						$idCategProd = idCategBlog($_GET['link']);
-                    	    $req1 = "SELECT id,raison FROM `marques` WHERE id IN (SELECT marque FROM `produits` WHERE `categorie` IN (SELECT id FROM categories_blog WHERE idparent = '".$idCategProd."' || id = '".$idCategProd."')) AND `etat`= '1' ORDER BY `ordre` ASC";
+                    	    $req1 = "SELECT id,raison FROM `marques` WHERE id IN (SELECT marque FROM `produits` WHERE `categorie` IN (SELECT id FROM categories_blog WHERE idparent IN (SELECT id FROM categories_blog WHERE idparent = '".$idCategProd."') OR idparent = '".$idCategProd."' OR id = '".$idCategProd."')) AND `etat`= '1' ORDER BY `ordre` ASC";
                     	    $res1 = executeRequete($req1);
                     	        while ($data2 = mysqli_fetch_array($res1)) 
                     	        { 
@@ -252,7 +252,7 @@
     		        <?php 
 				            $categ     =  sanitize($_GET['link']);
 				            $idc       = idCategBlog($categ);
-				            $req = "SELECT DISTINCT pr.marque FROM categories_blog ctg, produits pr WHERE (pr.categorie IN (SELECT id FROM categories_blog WHERE idparent = '$idc' || id = '$idc')) && ctg.link = '$categ' ";
+				            $req = "SELECT DISTINCT pr.marque FROM categories_blog ctg, produits pr WHERE (pr.categorie IN (SELECT id FROM categories_blog WHERE idparent IN (SELECT id FROM categories_blog WHERE idparent = '$idc') OR idparent = '$idc' OR id = '$idc')) && ctg.link = '$categ' ";
                             $res = executeRequete($req);
     		            while ($datactg = mysqli_fetch_array($res))  {
                             if($datactg['marque'] == '0') continue;

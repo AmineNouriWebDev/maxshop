@@ -112,7 +112,13 @@ if (isset($_POST['action']) && $_POST['action'] == 'mod' )
         	                                       while ($data1 = mysqli_fetch_array($res1)) { ?>
 
         	                                      <option value="<?php echo $data1['id']; ?>">--> <?php echo afficheChamp1($data1['titre']); ?></option>
+                                                  <?php
+        	                                      $req2 = 'SELECT * FROM `categories_blog` WHERE `idparent` = "'.$data1['id'].'" ORDER BY `ordre` ASC';
+        	                                      $res2 = executeRequete($req2);
+        	                                       while ($data2 = mysqli_fetch_array($res2)) { ?>
+        	                                      <option value="<?php echo $data2['id']; ?>">----> <?php echo afficheChamp1($data2['titre']); ?></option>
         	                                      <?php 
+        	                                       } 
         	                                       } 
         	                                     } 
         	                                     ?> 

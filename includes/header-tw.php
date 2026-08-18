@@ -29,6 +29,13 @@ while ($cat = mysqli_fetch_array($res_nav)) {
     $res_sub = executeRequete($req_sub);
     $subs = [];
     while ($sub = mysqli_fetch_array($res_sub)) {
+        $req_grandsub = "SELECT * FROM `categories_blog` WHERE `etat` = '1' AND `affichage_menu` = '1' AND `idparent`='".$sub['id']."' $cat_type_cond ORDER BY `ordre`";
+        $res_grandsub = executeRequete($req_grandsub);
+        $grand_subs = [];
+        while ($grandsub = mysqli_fetch_array($res_grandsub)) {
+            $grand_subs[] = $grandsub;
+        }
+        $sub['_subs'] = $grand_subs;
         $subs[] = $sub;
     }
     $cat['_subs'] = $subs;
@@ -910,9 +917,18 @@ $search_val = (isset($_POST['action']) && $_POST['action'] == 'search') ? htmlsp
           <?php if (!empty($cat['_subs'])): ?>
             <div class="sh-dropdown">
               <?php foreach ($cat['_subs'] as $sub): ?>
-                <a href="<?php echo lienCategorieEquipements($sub['link']); ?>" class="sh-dropdown-item">
+                <a href="<?php echo lienCategorieEquipements($sub['link']); ?>" class="sh-dropdown-item" <?php echo !empty($sub['_subs']) ? 'style="font-weight:600; color:var(--shop-primary); margin-top:0.25rem;"' : ''; ?>>
                   <?php echo htmlspecialchars($sub['titre']); ?>
                 </a>
+                <?php if (!empty($sub['_subs'])): ?>
+                  <div class="sh-dropdown-grandsubs" style="padding-left: 1rem; border-left: 2px solid var(--shop-border); margin: 0.25rem 0 0.5rem 0.5rem;">
+                    <?php foreach ($sub['_subs'] as $grandsub): ?>
+                      <a href="<?php echo lienCategorieEquipements($grandsub['link']); ?>" class="sh-dropdown-item" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">
+                        <?php echo htmlspecialchars($grandsub['titre']); ?>
+                      </a>
+                    <?php endforeach; ?>
+                  </div>
+                <?php endif; ?>
               <?php endforeach; ?>
             </div>
           <?php endif; ?>
@@ -1027,9 +1043,16 @@ $search_val = (isset($_POST['action']) && $_POST['action'] == 'search') ? htmlsp
             </button>
             <div class="sh-drawer-subs" id="cat-<?php echo $i; ?>">
               <?php foreach ($cat['_subs'] as $sub): ?>
-                <a href="<?php echo lienCategorieEquipements($sub['link']); ?>" class="sh-drawer-sub-link">
+                <a href="<?php echo lienCategorieEquipements($sub['link']); ?>" class="sh-drawer-sub-link" <?php echo !empty($sub['_subs']) ? 'style="font-weight:600; color:var(--shop-primary);"' : ''; ?>>
                   → <?php echo htmlspecialchars($sub['titre']); ?>
                 </a>
+                <?php if (!empty($sub['_subs'])): ?>
+                  <?php foreach ($sub['_subs'] as $grandsub): ?>
+                    <a href="<?php echo lienCategorieEquipements($grandsub['link']); ?>" class="sh-drawer-sub-link" style="padding-left: 2rem; font-size: 0.8rem;">
+                      - <?php echo htmlspecialchars($grandsub['titre']); ?>
+                    </a>
+                  <?php endforeach; ?>
+                <?php endif; ?>
               <?php endforeach; ?>
             </div>
           <?php else: ?>
