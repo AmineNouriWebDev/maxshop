@@ -10,7 +10,7 @@ $results = [];
 
 if(strlen($q) >= 2) {
     $q_safe = mysqli_real_escape_string($connexion, $q);
-    $req = "SELECT id, titre, type, link FROM produits WHERE (titre LIKE '%$q_safe%' OR id = '$q_safe') AND etat='1' ORDER BY titre ASC LIMIT 15";
+    $req = "SELECT id, titre, type, link FROM produits WHERE (titre LIKE '%$q_safe%' OR remarque LIKE '%$q_safe%' OR id = '$q_safe') AND etat='1' ORDER BY titre ASC LIMIT 15";
     $res = executeRequete($req);
     while($row = mysqli_fetch_assoc($res)) {
         $id = $row['id'];

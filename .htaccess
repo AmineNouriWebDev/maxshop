@@ -44,6 +44,7 @@ RewriteRule ^manifest\.webmanifest$ manifest.webmanifest.php [L,QSA]
 
 # New Clean URLs (Priority)
 RewriteRule ^produit/([^/]+)/?$ %{ENV:BASE}produit.php?link=$1 [L,QSA]
+RewriteRule ^abonnement/([^/]+)/?$ %{ENV:BASE}produit.php?link=$1 [L,QSA]
 RewriteRule ^boutique/([^/]+)/?$ %{ENV:BASE}categorie.php?link=$1 [L,QSA]
 RewriteRule ^boutique/?$ %{ENV:BASE}categorie.php [L,QSA]
 RewriteRule ^panier/?$ %{ENV:BASE}cart.php [L,QSA]

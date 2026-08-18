@@ -15,10 +15,11 @@
 	<?php } ?>
 <?php 
 if (isset($_POST['action']) && $_POST['action'] == 'ajt' ){
-	$id         = formReception($_POST['id']);
-	$idcateg    = formReception($_POST['idcateg']);
+	$id                = formReception($_POST['id']);
+	$idcateg           = formReception($_POST['idcateg']);
+	$id_prod_similaire = isset($_POST['id_prod_similaire']) ? formReception($_POST['id_prod_similaire']) : 0;
 	
-		$requete = 'INSERT INTO `produits_similaire`(`id_produit`, `id_categ`) VALUES ("'. $id .'","'. $idcateg .'")';
+		$requete = 'INSERT INTO `produits_similaire`(`id_produit`, `id_categ`, `id_prod_similaire`) VALUES ("'. $id .'","'. $idcateg .'", "'. $id_prod_similaire .'")';
 		$result = executeRequete($requete);	
 	?>
 	<script language="javascript">
@@ -39,7 +40,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'ajt' ){
                                     <table class="table color-table info-table table-bordered">
                                         <thead>
                                             <tr>
-                                                <th>Titre</th>
+                                                <th>Type / Titre</th>
                                                 <th class="text-nowrap">Action</th>
                                             </tr>
                                         </thead>
@@ -50,9 +51,14 @@ if (isset($_POST['action']) && $_POST['action'] == 'ajt' ){
 	                                      $num = mysqli_num_rows($resultat);
 		                                  if ($num > 0 ) { 
 			                               while ($data = mysqli_fetch_array($resultat))  {
-								         ?>
+                                               if ($data['id_prod_similaire'] > 0) {
+                                                   $titre_aff = "Produit exact : <strong>" . titreProduits($data['id_prod_similaire']) . "</strong>";
+                                               } else {
+                                                   $titre_aff = "Catégorie : " . titreCategBlog($data['id_categ']);
+                                               }
+								             ?>
                                             <tr>
-                                                <td><?php echo titreCategBlog($data['id_categ']); ?></td>
+                                                <td><?php echo $titre_aff; ?></td>
                                                 <td class="text-nowrap">
                                                     <a href="index.php?r=addproduitssimilaire&idps=<?php echo $data['id']; ?>&idp=<?php echo $_GET['id']; ?>&action=supp&start=<?php echo $_GET['start']; ?>" data-toggle="tooltip" data-original-title="Supprimer"> <i class="fa fa-close text-danger"></i></a>
                                                 </td>
@@ -77,10 +83,24 @@ if (isset($_POST['action']) && $_POST['action'] == 'ajt' ){
                             <div class="card-body">
                                 <h4 class="card-title">Ajouter produits similaire</h4>
                                 <form method="POST" enctype="multipart/form-data" novalidate="novalidate">
-									<div class="row">
+                                    <div class="row mb-4">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <h5 style="color:var(--shop-primary); font-weight:600;"><i class="fa fa-search"></i> Produit Spécifique (Recherche Live)</h5>
+                                                <div class="controls position-relative">
+                                                    <input type="text" id="live_search_produit" class="form-control" autocomplete="off" placeholder="Tapez le nom ou la référence du produit... (Laissez vide pour sélectionner une catégorie)">
+                                                    <input type="hidden" name="id_prod_similaire" id="idproduit_hidden" value="0">
+                                                    <div id="live_search_results" style="position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #ccc; max-height:250px; overflow-y:auto; z-index:100; display:none; border-radius:4px; box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
+                                                </div>
+                                                <small class="text-muted mt-1 d-block">Si vous sélectionnez un produit, la catégorie ci-dessous sera ignorée.</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr>
+									<div class="row mt-4">
 										<div class="col-md-6">
 											<div class="form-group">
-											<h5>Produits</h5>
+											<h5>Ou par sous-catégorie complète</h5>
 											<div class="controls">
 												<select name="idcateg" id="select2" class="form-control">
 												
@@ -124,3 +144,81 @@ if (isset($_POST['action']) && $_POST['action'] == 'ajt' ){
                         </div>
                     </div>
                 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('live_search_produit');
+    const hiddenInput = document.getElementById('idproduit_hidden');
+    const resultsContainer = document.getElementById('live_search_results');
+    let debounceTimer;
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        hiddenInput.value = "0"; // Reset hidden input if user types
+
+        if(query.length < 2) {
+            resultsContainer.style.display = 'none';
+            return;
+        }
+
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            // Re-using the same search endpoint used for add_produits
+            fetch('ajax_search_products.php?q=' + encodeURIComponent(query))
+            .then(res => res.json())
+            .then(data => {
+                resultsContainer.innerHTML = '';
+                if(data.length === 0) {
+                    resultsContainer.innerHTML = '<div style="padding:15px; color:#999; text-align:center;">Aucun produit trouvé.</div>';
+                } else {
+                    data.forEach(item => {
+                        const div = document.createElement('div');
+                        div.style.display = 'flex';
+                        div.style.alignItems = 'center';
+                        div.style.padding = '10px 15px';
+                        div.style.cursor = 'pointer';
+                        div.style.borderBottom = '1px solid #f0f0f0';
+                        div.style.transition = 'background 0.2s';
+                        
+                        const img = item.photo ? `<img src="../${item.photo}" style="width:40px; height:40px; object-fit:contain; margin-right:12px; border-radius:4px; background:#fff; border:1px solid #eee;">` : `<div style="width:40px; height:40px; margin-right:12px; background:#f5f5f5; border-radius:4px;"></div>`;
+                        
+                        div.innerHTML = `
+                            ${img}
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#333;">${item.titre}</div>
+                                <div style="font-size:12px; color:var(--info); font-weight:bold;">${item.prix}</div>
+                            </div>
+                            <div style="color:#bbb; font-size:12px;"><i class="fa fa-plus-circle"></i></div>
+                        `;
+                        
+                        div.addEventListener('mouseover', () => div.style.backgroundColor = '#f8f9fa');
+                        div.addEventListener('mouseout', () => div.style.backgroundColor = 'transparent');
+                        
+                        div.addEventListener('click', () => {
+                            searchInput.value = item.titre;
+                            hiddenInput.value = item.id;
+                            resultsContainer.style.display = 'none';
+                            
+                            // Optional: auto-submit to add right away
+                            searchInput.closest('form').submit();
+                        });
+                        resultsContainer.appendChild(div);
+                    });
+                }
+                resultsContainer.style.display = 'block';
+            })
+            .catch(err => {
+                console.error(err);
+                resultsContainer.innerHTML = '<div style="padding:10px; color:red;">Erreur de chargement.</div>';
+            });
+        }, 300);
+    });
+
+    // Hide results when clicking outside
+    document.addEventListener('click', function(e) {
+        if(!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+            resultsContainer.style.display = 'none';
+        }
+    });
+});
+</script>

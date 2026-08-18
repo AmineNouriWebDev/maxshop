@@ -1,0 +1,1 @@
+<?php include("../includes/connec.php"); $conn = connexionBDD(); $db = mysqli_connect($conn["serveur"], $conn["user_bdd"], $conn["user_pass"], $conn["name_bdd"]); $res = mysqli_query($db, "SELECT * FROM fichestechniques"); while($r = mysqli_fetch_assoc($res)) { print_r($r); } ?>

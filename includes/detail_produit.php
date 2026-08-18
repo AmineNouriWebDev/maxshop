@@ -1035,7 +1035,12 @@
                 </div>
             </div>
 
-            <?php if ($contenu != '' || $video != ''): ?>
+            <?php 
+            $req_fiches = "SELECT * FROM `fichestechniques` WHERE `idproduit` = '$id' ORDER BY id ASC";
+            $res_fiches = executeRequete($req_fiches);
+            $num_fiches = mysqli_num_rows($res_fiches);
+            if ($contenu != '' || $video != '' || $num_fiches > 0): 
+            ?>
                 <!-- ═══ DÉTAILS DU PRODUIT — Full-width below both columns ═══ -->
                 <div class="row mt-5">
                     <div class="col-12 px-4 px-lg-5" id="details-complets">
@@ -1047,6 +1052,28 @@
                                 <?php echo $contenu; ?>
                             </div>
                         <?php endif; ?>
+                        
+                        <?php if ($num_fiches > 0): ?>
+                            <h4 class="fw-bold mb-4 <?php echo ($contenu != '') ? 'mt-5' : ''; ?> text-center"
+                                style="border-bottom:2px solid var(--shop-border,#e5e7eb); padding-bottom:0.75rem;">
+                                Fiches techniques & Documents</h4>
+                            <div class="d-flex flex-wrap gap-3 justify-content-center mt-4">
+                                <?php while($data_fiche = mysqli_fetch_array($res_fiches)): 
+                                    $link_fiche = 'media/fiches_techniques/'.afficheChamp($data_fiche['fiche']);
+                                    $detail_fiche = afficheChamp($data_fiche['detail']);
+                                    if(empty(strip_tags(trim($detail_fiche)))) {
+                                        $detail_fiche = "Télécharger la fiche technique";
+                                    }
+                                ?>
+                                <a href="<?php echo htmlspecialchars($link_fiche); ?>" target="_blank" class="btn-secondary-tw d-flex align-items-center gap-2 text-decoration-none" style="padding:0.75rem 1.25rem; font-size:0.9rem;">
+                                    <i class="fa fa-file-pdf-o text-danger fa-lg"></i>
+                                    <span><?php echo strip_tags($detail_fiche); ?></span>
+                                    <i class="fa fa-download ms-2" style="opacity:0.5;"></i>
+                                </a>
+                                <?php endwhile; ?>
+                            </div>
+                        <?php endif; ?>
+
                         <?php if ($video != ''): ?>
                             <h4 class="fw-bold mb-4 mt-5 text-center"
                                 style="border-bottom:2px solid var(--shop-border,#e5e7eb); padding-bottom:0.75rem;">Vidéo de
@@ -1334,9 +1361,16 @@
 <?php
 /* ─── Similar Products ─── */
 /* ─── Similar Products ─── */
-$req_sim = 'SELECT DISTINCT id, link FROM produits 
-                    WHERE categorie = "' . $id_categ . '" AND etat = "1" AND id != "' . $id . '"
-                    ORDER BY id DESC LIMIT 12';
+$req_sim = "
+    SELECT DISTINCT p.id, p.link 
+    FROM produits p 
+    WHERE p.etat = '1' AND p.id != '$id' AND (
+        p.categorie = '$id_categ' 
+        OR p.categorie IN (SELECT id_categ FROM produits_similaire WHERE id_produit = '$id' AND id_categ > 0)
+        OR p.id IN (SELECT id_prod_similaire FROM produits_similaire WHERE id_produit = '$id' AND id_prod_similaire > 0)
+    )
+    ORDER BY p.id DESC LIMIT 12
+";
 $res_sim = executeRequete($req_sim);
 $sim_count = mysqli_num_rows($res_sim);
 if ($sim_count > 0):
